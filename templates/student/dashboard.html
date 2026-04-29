@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block title %}Панель тестируемого{% endblock %}
+{% block public_content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h3 mb-1">Панель тестируемого</h1>
+        <p class="text-secondary mb-0">Публичные тесты, приватные ссылки и история прохождений.</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a class="btn btn-outline-dark" href="/tests/assigned">Выданные тесты</a>
+        <a class="btn btn-dark" href="/tests/catalog">Открыть каталог тестов</a>
+        <a class="btn btn-outline-dark" href="/attempts">Мои результаты</a>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-4"><div class="card stat-card"><div class="card-body"><div class="stat-label">Публичные тесты</div><div class="stat-value">{{ stats.public_tests_count }}</div></div></div></div>
+    <div class="col-md-4"><div class="card stat-card"><div class="card-body"><div class="stat-label">Все попытки</div><div class="stat-value">{{ stats.my_attempts_count }}</div></div></div></div>
+    <div class="col-md-4"><div class="card stat-card"><div class="card-body"><div class="stat-label">Завершено</div><div class="stat-value">{{ stats.completed_attempts_count }}</div></div></div></div>
+</div>
+
+<div class="card shadow-sm border-0 mb-4">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2 class="h5 mb-0">Выданные тесты</h2>
+            <a class="btn btn-sm btn-outline-dark" href="/tests/assigned">Все выданные</a>
+        </div>
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead><tr><th>Тест</th><th>Дата выдачи</th><th></th></tr></thead>
+                <tbody>
+                {% for assignment in assignments %}
+                    {% set assigned_test = assigned_tests_by_id.get(assignment.test_id) %}
+                    <tr>
+                        <td>{{ assigned_test.title if assigned_test else assignment.test_id }}</td>
+                        <td>{{ assignment.created_at|datetime_label }}</td>
+                        <td><a class="btn btn-sm btn-dark" href="/tests/assignments/{{ assignment.id }}/take">Начать</a></td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="3" class="text-secondary">Пока нет тестов, выданных вашей группе.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="card shadow-sm border-0">
+    <div class="card-body">
+        <h2 class="h5 mb-3">Последние попытки</h2>
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead><tr><th>Тест</th><th>Статус</th><th>Баллы</th><th></th></tr></thead>
+                <tbody>
+                {% for attempt in recent_attempts %}
+                    <tr>
+                        <td>{{ attempt.test_title }}</td>
+                        <td><span class="badge text-bg-secondary">{{ attempt.status|enum_label }}</span></td>
+                        <td>{{ attempt.score }} / {{ attempt.max_score }}</td>
+                        <td><a class="btn btn-sm btn-outline-dark" href="/attempts/{{ attempt.id }}">Открыть</a></td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="4" class="text-secondary">Вы пока не проходили тесты.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

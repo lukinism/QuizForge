@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% block title %}Результат теста{% endblock %}
+{% block public_content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h3 mb-1">{{ attempt.test_title }}</h1>
+        <p class="text-secondary mb-0">Детали вашей попытки прохождения.</p>
+    </div>
+    <a class="btn btn-outline-dark" href="/attempts">Назад к результатам</a>
+</div>
+
+{% if attempt.status.value == "pending_review" %}
+    <div class="alert alert-warning border-0 shadow-sm">Ваш тест отправлен на ручную проверку. Итоговый балл появится после проверки.</div>
+{% elif attempt.status.value == "revision_requested" %}
+    <div class="alert alert-info border-0 shadow-sm">Проверяющий отправил результат на доработку. Откройте тест снова, исправьте ответ и отправьте повторно.</div>
+{% endif %}
+
+{% if results_hidden %}
+    <div class="alert alert-warning">Автор теста отключил просмотр подробного результата для тестируемых.</div>
+{% else %}
+    <div class="row g-3 mb-4">
+        <div class="col-md-3"><div class="card stat-card"><div class="card-body"><div class="stat-label">Баллы</div><div class="stat-value">{{ attempt.score }}/{{ attempt.max_score }}</div></div></div></div>
+        <div class="col-md-3"><div class="card stat-card"><div class="card-body"><div class="stat-label">Процент</div><div class="stat-value">{{ attempt.percent }}%</div></div></div></div>
+        <div class="col-md-3"><div class="card stat-card"><div class="card-body"><div class="stat-label">Результат</div><div class="stat-value">{% if attempt.status.value in ['pending_review', 'revision_requested'] %}На проверке{% elif attempt.is_passed %}Сдал{% else %}Не сдал{% endif %}</div></div></div></div>
+        <div class="col-md-3"><div class="card stat-card"><div class="card-body"><div class="stat-label">Статус</div><div class="stat-value">{{ attempt.status|enum_label }}</div></div></div></div>
+    </div>
+
+    {% for answer in attempt.answers %}
+        <div class="card shadow-sm border-0 mb-3">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div>
+                        <div class="fw-semibold">{{ loop.index }}. {{ answer.question_text }}</div>
+                        <div class="small text-secondary">{{ answer.question_type|enum_label }} · {{ answer.points_received }}/{{ answer.max_points }}</div>
+                    </div>
+                    {% if answer.requires_manual_review and not answer.manual_reviewed %}
+                        <span class="badge text-bg-warning">На проверке</span>
+                    {% elif answer.requires_manual_review %}
+                        <span class="badge text-bg-info">Проверено</span>
+                    {% elif answer.is_correct %}
+                        <span class="badge text-bg-success">Верно</span>
+                    {% else %}
+                        <span class="badge text-bg-danger">Неверно</span>
+                    {% endif %}
+                </div>
+
+                {% if answer.media_url %}
+                    <div class="mb-3">
+                        {% if answer.question_type.value == "image" %}
+                            <img class="img-fluid rounded border" src="{{ answer.media_url }}" alt="Материал к вопросу">
+                        {% elif answer.question_type.value == "audio" %}
+                            <audio class="w-100" controls src="{{ answer.media_url }}"></audio>
+                        {% elif answer.question_type.value == "video" %}
+                            <video class="w-100 rounded border" controls src="{{ answer.media_url }}"></video>
+                        {% elif answer.question_type.value == "file" %}
+                            <a class="btn btn-outline-dark" href="{{ answer.media_url }}" target="_blank" rel="noopener">Открыть файл</a>
+                        {% endif %}
+                    </div>
+                {% endif %}
+                {% if answer.code_snippet %}
+                    <pre class="bg-dark text-light rounded p-3"><code>{{ answer.code_snippet }}</code></pre>
+                {% endif %}
+
+                {% if answer.question_type.value in ["single_choice", "multiple_choice", "image", "audio", "video", "file"] %}
+                    <div class="small text-secondary mb-2">Ваш ответ</div>
+                    <ul class="mb-3">
+                        {% for option in answer.options if option.id in answer.selected_options %}
+                            <li>{{ option.text }}</li>
+                        {% else %}
+                            <li>Нет ответа</li>
+                        {% endfor %}
+                    </ul>
+                {% elif answer.question_type.value in ["matching", "ordering"] %}
+                    <div class="small text-secondary mb-2">Ваш ответ</div>
+                    <ul class="mb-3">
+                        {% for value in answer.selected_options %}
+                            <li>{{ value }}</li>
+                        {% else %}
+                            <li>Нет ответа</li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <div class="small text-secondary mb-1">Ваш ответ</div>
+                    <div class="border rounded p-3 mb-3" style="white-space: pre-line;">{{ answer.text_answer or "Нет ответа" }}</div>
+                {% endif %}
+
+                {% if answer.requires_manual_review and answer.review_comment %}
+                    <div class="small text-secondary mb-1">Комментарий проверяющего</div>
+                    <div class="alert alert-light border">{{ answer.review_comment }}</div>
+                {% endif %}
+
+                {% if show_correct_answers and not answer.requires_manual_review %}
+                    <div class="small text-secondary mb-2">Правильные ответы</div>
+                    <ul class="mb-0">
+                        {% for option in answer.options %}
+                            {% if option.is_correct %}
+                                <li>{{ option.text }}</li>
+                            {% elif answer.question_type.value == "matching" %}
+                                <li>{{ option.text }} → {{ option.match_text }}</li>
+                            {% elif answer.question_type.value == "ordering" %}
+                                <li>{{ option.order_index }}. {{ option.text }}</li>
+                            {% endif %}
+                        {% else %}
+                            <li>Не заданы</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </div>
+        </div>
+    {% endfor %}
+{% endif %}
+{% endblock %}

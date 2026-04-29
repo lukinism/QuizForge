@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Отчеты{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h3 mb-1">Отчеты</h1>
+        <div class="text-muted">Сформированные PDF-отчеты</div>
+    </div>
+    <a class="btn btn-primary" href="/reports/create">Создать отчет</a>
+</div>
+
+<div class="card shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead>
+            <tr>
+                <th>Номер</th>
+                <th>Тип</th>
+                <th>Название</th>
+                <th>Кто сформировал</th>
+                <th>Дата создания</th>
+                <th class="text-end">Действия</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for report in reports %}
+                <tr>
+                    <td class="fw-semibold">{{ report.report_number }}</td>
+                    <td>{{ report.type.value }}</td>
+                    <td>{{ report.title }}</td>
+                    <td>
+                        {% set author = user_map.get(report.generated_by) %}
+                        {{ author.full_name or author.username if author else "Неизвестно" }}
+                    </td>
+                    <td>{{ report.created_at|datetime_label }}</td>
+                    <td class="text-end">
+                        <a class="btn btn-outline-secondary btn-sm" href="/reports/{{ report.id }}">Подробнее</a>
+                        <a class="btn btn-outline-primary btn-sm" href="/reports/{{ report.id }}/download">Скачать PDF</a>
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="6" class="text-center text-muted py-4">Отчетов пока нет.</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

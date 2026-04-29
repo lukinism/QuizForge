@@ -1,0 +1,10 @@
+{% if options.include_charts and charts %}
+<h2>Диаграммы</h2>
+{% for chart_name, rows in charts.items() %}
+    <strong>{{ chart_name }}</strong>
+    {% for row in rows %}
+        <div>{{ row.label }} · {{ row.value }}{% if row.total %} из {{ row.total }}{% endif %}</div>
+        <div class="bar"><span style="width: {{ row.percent }}%; background: {{ row.color }}"></span></div>
+    {% endfor %}
+{% endfor %}
+{% endif %}

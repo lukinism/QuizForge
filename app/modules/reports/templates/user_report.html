@@ -1,0 +1,28 @@
+{% extends "base_report.html" %}
+{% block report_content %}
+<h2>Пользователь</h2>
+<table>
+<tr><th>Имя</th><td>{{ participant.full_name or participant.username }}</td><th>Email</th><td>{{ participant.email }}</td></tr>
+<tr><th>Группы</th><td colspan="3">{{ groups|map(attribute="title")|join(", ") }}</td></tr>
+</table>
+{% include "partials/statistics.html" %}
+{% include "partials/charts.html" %}
+<h2>Тесты</h2>
+<table>
+<tr><th>Тест</th><th>Дата</th><th>Баллы</th><th>Максимум</th><th>%</th><th>Статус</th><th>Попытка</th></tr>
+{% for attempt in attempts %}
+{% set test = tests.get(attempt.test_id) %}
+<tr><td>{{ test.title if test else attempt.test_title }}</td><td>{{ attempt.started_at.strftime("%d.%m.%Y %H:%M") }}</td><td>{{ attempt.score }}</td><td>{{ attempt.max_score }}</td><td>{{ attempt.percent }}</td><td>{{ "passed" if attempt.is_passed else attempt.status.value }}</td><td>{{ attempt.id }}</td></tr>
+{% if options.include_answers %}
+<tr><td colspan="7">
+{% for answer in attempt.answers %}
+<strong>{{ answer.question_text }}</strong><br>
+Ответ: {{ answer.text_answer or answer.selected_options|join(", ") }}
+{% if options.include_correct_answers and can_show_correct_answers %}<br>Правильные: {{ answer.options|selectattr("is_correct")|map(attribute="text")|join(", ") }}{% endif %}
+<br><br>
+{% endfor %}
+</td></tr>
+{% endif %}
+{% endfor %}
+</table>
+{% endblock %}

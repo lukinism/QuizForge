@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% block title %}Мониторинг теста{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-start mb-4">
+    <div>
+        <h1 class="h3 mb-1">{{ test.title }}</h1>
+        <p class="text-secondary mb-0">Группа: {{ group.title }}</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a class="btn btn-outline-dark" href="/tests/{{ test.id }}/edit">К тесту</a>
+        {% if assignment.is_active %}
+            <form action="/tests/assignments/{{ assignment.id }}/finish" method="post">
+                <button class="btn btn-outline-danger" type="submit">Завершить для всей группы</button>
+            </form>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="card stat-card">
+            <div class="card-body">
+                <div class="stat-label">Участники</div>
+                <div class="stat-value">{{ members|length }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card stat-card">
+            <div class="card-body">
+                <div class="stat-label">Статус выдачи</div>
+                <div class="stat-value">{% if assignment.is_active %}Активна{% else %}Закрыта{% endif %}</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card stat-card">
+            <div class="card-body">
+                <div class="stat-label">Автообновление</div>
+                <div class="stat-value">5 сек</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card shadow-sm border-0">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead><tr><th>Тестируемый</th><th>Email</th><th>Состояние</th><th>Начал</th><th>Завершил</th><th>Баллы</th><th>Действия</th></tr></thead>
+                <tbody>
+                {% for member in members %}
+                    {% set attempt = attempts_by_user.get(member.id) %}
+                    {% set is_closed = member.id in assignment.closed_user_ids %}
+                    <tr>
+                        <td>{{ member.full_name or member.username }}</td>
+                        <td>{{ member.email }}</td>
+                        <td>
+                            {% if attempt %}
+                                <span class="badge {% if attempt.status.value == 'pending_review' %}text-bg-warning{% elif attempt.status.value == 'revision_requested' %}text-bg-info{% else %}text-bg-secondary{% endif %}">
+                                    {{ attempt.status|enum_label }}
+                                </span>
+                            {% elif is_closed %}
+                                <span class="badge text-bg-secondary">Завершена досрочно</span>
+                            {% else %}
+                                <span class="badge text-bg-light border">Не начал</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ attempt.started_at|datetime_label if attempt else "-" }}</td>
+                        <td>{{ attempt.finished_at|datetime_label if attempt and attempt.finished_at else "-" }}</td>
+                        <td>{% if attempt %}{{ attempt.score }} / {{ attempt.max_score }}{% else %}-{% endif %}</td>
+                        <td>
+                            <div class="d-flex gap-2">
+                                {% if attempt %}
+                                    <a class="btn btn-sm {% if attempt.status.value == 'pending_review' %}btn-warning{% else %}btn-outline-dark{% endif %}" href="/attempts/{{ attempt.id }}">
+                                        {% if attempt.status.value == 'pending_review' %}Проверить{% else %}Открыть{% endif %}
+                                    </a>
+                                {% endif %}
+                                {% if assignment.is_active and not is_closed and (not attempt or attempt.status.value == 'started') %}
+                                    <form action="/tests/assignments/{{ assignment.id }}/members/{{ member.id }}/finish" method="post">
+                                        <button class="btn btn-sm btn-outline-danger" type="submit">Завершить</button>
+                                    </form>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="7" class="text-secondary">В группе пока нет участников.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    window.setTimeout(() => window.location.reload(), 5000);
+</script>
+{% endblock %}

@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Вход{% endblock %}
+{% block public_content %}
+<div class="row justify-content-center">
+    <div class="col-md-5 col-lg-4">
+        <div class="card shadow-sm border-0">
+            <div class="card-body p-4">
+                <h1 class="h3 mb-3">Вход в систему</h1>
+                <p class="text-secondary small mb-4">Используйте адрес электронной почты и пароль, чтобы открыть рабочую панель.</p>
+                <form action="/auth/login" method="post" class="d-grid gap-3">
+                    <input type="hidden" name="next" value="{{ request.query_params.get('next', '') }}">
+                    <div>
+                        <label class="form-label">Электронная почта</label>
+                        <input class="form-control" type="email" name="email" value="{{ email or '' }}" required>
+                    </div>
+                    <div>
+                        <label class="form-label">Пароль</label>
+                        <input class="form-control" type="password" name="password" required>
+                    </div>
+                    <button class="btn btn-dark" type="submit">Войти</button>
+                </form>
+                <div class="mt-3 small">
+                    Нет аккаунта? <a href="/auth/register">Зарегистрироваться</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

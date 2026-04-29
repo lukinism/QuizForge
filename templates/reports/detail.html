@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}{{ report.report_number }}{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h3 mb-1">{{ report.report_number }}</h1>
+        <div class="text-muted">{{ report.title }}</div>
+    </div>
+    <div class="d-flex gap-2">
+        <a class="btn btn-outline-secondary" href="/reports">К списку</a>
+        <a class="btn btn-primary" href="/reports/{{ report.id }}/download">Скачать PDF</a>
+    </div>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <dl class="row mb-0">
+            <dt class="col-sm-3">Тип</dt>
+            <dd class="col-sm-9">{{ report.type.value }}</dd>
+            <dt class="col-sm-3">Кто сформировал</dt>
+            <dd class="col-sm-9">{{ generated_by.full_name or generated_by.username if generated_by else "Неизвестно" }}</dd>
+            <dt class="col-sm-3">Дата создания</dt>
+            <dd class="col-sm-9">{{ report.created_at|datetime_label }}</dd>
+            <dt class="col-sm-3">Фильтры</dt>
+            <dd class="col-sm-9"><code>{{ report.filters }}</code></dd>
+            <dt class="col-sm-3">Настройки</dt>
+            <dd class="col-sm-9"><code>{{ report.options }}</code></dd>
+            <dt class="col-sm-3">Проверка</dt>
+            <dd class="col-sm-9"><a href="/reports/verify/{{ report.report_number }}">/reports/verify/{{ report.report_number }}</a></dd>
+        </dl>
+    </div>
+</div>
+{% endblock %}

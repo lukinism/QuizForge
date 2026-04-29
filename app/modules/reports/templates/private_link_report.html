@@ -1,0 +1,18 @@
+{% extends "base_report.html" %}
+{% block report_content %}
+<h2>Приватная ссылка</h2>
+<table>
+<tr><th>Тест</th><td>{{ test.title if test else "Не найден" }}</td><th>Токен</th><td>{{ masked_token }}</td></tr>
+<tr><th>Создана</th><td>{{ link.created_at.strftime("%d.%m.%Y %H:%M") }}</td><th>Кем</th><td>{{ creator.username if creator else "Неизвестно" }}</td></tr>
+<tr><th>Истекает</th><td>{{ link.expires_at or "Без срока" }}</td><th>Использований</th><td>{{ link.used_count }} / {{ link.max_uses or "∞" }}</td></tr>
+</table>
+{% include "partials/statistics.html" %}
+{% include "partials/charts.html" %}
+<h2>Прохождения</h2>
+<table><tr><th>Пользователь</th><th>Email</th><th>Дата</th><th>Результат</th><th>%</th><th>Статус</th></tr>
+{% for attempt in attempts %}
+{% set user = users.get(attempt.user_id) %}
+<tr><td>{{ user.username if user else "Неизвестно" }}</td><td>{{ user.email if user else "" }}</td><td>{{ attempt.started_at.strftime("%d.%m.%Y %H:%M") }}</td><td>{{ attempt.score }}/{{ attempt.max_score }}</td><td>{{ attempt.percent }}</td><td>{{ attempt.status.value }}</td></tr>
+{% endfor %}
+</table>
+{% endblock %}

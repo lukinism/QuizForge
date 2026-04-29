@@ -1,0 +1,18 @@
+{% extends "base_report.html" %}
+{% block report_content %}
+<h2>Группа</h2>
+<table><tr><th>Название</th><td>{{ group.title }}</td><th>Участников</th><td>{{ len(users) }}</td></tr></table>
+{% include "partials/statistics.html" %}
+{% include "partials/charts.html" %}
+<h2>Участники</h2>
+<table>
+<tr><th>№</th><th>Пользователь</th><th>Email</th><th>Дата</th><th>Баллы</th><th>%</th><th>Статус</th></tr>
+{% for index, user in enumerate(users, 1) %}
+{% set attempt = attempts_by_user.get(user.id) %}
+<tr><td>{{ index }}</td><td>{{ user.full_name or user.username }}</td><td>{{ user.email }}</td><td>{{ attempt.started_at.strftime("%d.%m.%Y %H:%M") if attempt else "Не начинал" }}</td><td>{{ attempt.score if attempt else 0 }}</td><td>{{ attempt.percent if attempt else 0 }}</td><td>{{ attempt.status.value if attempt else "not_started" }}</td></tr>
+{% endfor %}
+</table>
+<h2>Сдали</h2><p>{{ passed_users|map(attribute="username")|join(", ") or "Нет" }}</p>
+<h2>Не сдали</h2><p>{{ failed_users|map(attribute="username")|join(", ") or "Нет" }}</p>
+<h2>Не начали</h2><p>{{ not_started_users|map(attribute="username")|join(", ") or "Нет" }}</p>
+{% endblock %}

@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Регистрация{% endblock %}
+{% block public_content %}
+<div class="row justify-content-center">
+    <div class="col-md-6 col-lg-5">
+        <div class="card shadow-sm border-0">
+            <div class="card-body p-4">
+                <h1 class="h3 mb-3">Регистрация тестируемого</h1>
+                <p class="text-secondary small mb-4">После регистрации будет создан аккаунт с ролью тестируемого.</p>
+                <form action="/auth/register" method="post" class="row g-3">
+                    <div class="col-12">
+                        <label class="form-label">ФИО</label>
+                        <input class="form-control" type="text" name="full_name" value="{{ full_name or '' }}">
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">Имя пользователя</label>
+                        <input class="form-control" type="text" name="username" value="{{ username or '' }}" required>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">Электронная почта</label>
+                        <input class="form-control" type="email" name="email" value="{{ email or '' }}" required>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">Пароль</label>
+                        <input class="form-control" type="password" name="password" minlength="8" required>
+                    </div>
+                    <div class="col-12">
+                        <button class="btn btn-dark w-100" type="submit">Создать аккаунт</button>
+                    </div>
+                </form>
+                <div class="mt-3 small">
+                    Уже есть аккаунт? <a href="/auth/login">Войти</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

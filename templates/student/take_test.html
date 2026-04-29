@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+{% block title %}Прохождение теста{% endblock %}
+{% block public_content %}
+<div class="d-flex justify-content-between align-items-start mb-4">
+    <div>
+        <h1 class="h3 mb-1">{{ test.title }}</h1>
+        <p class="text-secondary mb-0">
+            {% if is_revision %}
+                Доработка ответов, которые требуют ручной проверки.
+            {% else %}
+                {{ test.description or "Без описания" }}
+            {% endif %}
+        </p>
+    </div>
+    <div class="text-end">
+        <div class="small text-secondary">Попытка {{ attempt.id }}</div>
+        {% if remaining_seconds is not none %}
+            <div id="attempt-timer" class="alert alert-warning py-2 px-3 mt-2 mb-0" data-seconds="{{ remaining_seconds }}">
+                Осталось времени: <strong class="timer-value"></strong>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+{% if is_revision %}
+    <div class="alert alert-info border-0 shadow-sm">
+        Проверяющий отправил результат на доработку. Ниже показаны только вопросы, которые проверяются вручную.
+    </div>
+{% endif %}
+
+{% if not is_revision and test.settings.instruction_enabled and test.settings.instruction_text %}
+    <div id="test-instruction" class="card shadow-sm border-0 mb-4">
+        <div class="card-body">
+            <h2 class="h5 mb-3">Инструкция</h2>
+            <div class="text-secondary mb-4" style="white-space: pre-line;">{{ test.settings.instruction_text }}</div>
+            <button class="btn btn-dark" type="button" data-start-test>Начать тест</button>
+        </div>
+    </div>
+{% endif %}
+
+<form
+    id="attempt-form"
+    action="/attempts/{{ attempt.id }}/submit"
+    method="post"
+    data-status-url="/attempts/{{ attempt.id }}/status"
+    data-flow-mode="{{ test.settings.flow_mode.value }}"
+    data-has-instruction="{% if not is_revision and test.settings.instruction_enabled and test.settings.instruction_text %}true{% else %}false{% endif %}"
+    data-allow-skip="{% if is_revision or test.settings.allow_question_skip %}true{% else %}false{% endif %}"
+>
+    {% for answer in visible_answers %}
+        <div class="card shadow-sm border-0 mb-3 question-step" data-question-index="{{ loop.index0 }}">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div>
+                        <div class="fw-semibold">{{ loop.index }}. {{ answer.question_text }}</div>
+                        <div class="small text-secondary">{{ answer.question_type|enum_label }} · {{ answer.max_points }} балл(ов)</div>
+                    </div>
+                    {% if test.settings.flow_mode.value == 'one_by_one' %}
+                        <div class="badge text-bg-light border">Вопрос {{ loop.index }} из {{ visible_answers|length }}</div>
+                    {% endif %}
+                </div>
+
+                {% if answer.media_url %}
+                    <div class="mb-3">
+                        {% if answer.question_type.value == "image" %}
+                            <img class="img-fluid rounded border" src="{{ answer.media_url }}" alt="Материал к вопросу">
+                        {% elif answer.question_type.value == "audio" %}
+                            <audio class="w-100" controls src="{{ answer.media_url }}"></audio>
+                        {% elif answer.question_type.value == "video" %}
+                            <video class="w-100 rounded border" controls src="{{ answer.media_url }}"></video>
+                        {% elif answer.question_type.value == "file" %}
+                            <a class="btn btn-outline-dark" href="{{ answer.media_url }}" target="_blank" rel="noopener">Открыть файл</a>
+                        {% endif %}
+                    </div>
+                {% endif %}
+
+                {% if answer.code_snippet %}
+                    <div class="mb-3">
+                        <div class="small text-secondary mb-1">{{ answer.code_language or "код" }}</div>
+                        <pre class="bg-dark text-light rounded p-3 mb-0"><code>{{ answer.code_snippet }}</code></pre>
+                    </div>
+                {% endif %}
+
+                {% if answer.question_type.value in ["single_choice", "multiple_choice", "image", "audio", "video", "file"] %}
+                    <div class="d-grid gap-2">
+                        {% for option in answer.options %}
+                            <label class="option-tile">
+                                <input class="form-check-input" type="{% if answer.question_type.value == 'multiple_choice' %}checkbox{% else %}radio{% endif %}" name="question_{{ answer.question_id }}" value="{{ option.id }}" {% if option.id in answer.selected_options %}checked{% endif %}>
+                                <span>{{ option.text }}</span>
+                            </label>
+                        {% endfor %}
+                    </div>
+                {% elif answer.question_type.value == "matching" %}
+                    <div class="d-grid gap-2">
+                        {% for option in answer.options %}
+                            <div class="row g-2 align-items-center">
+                                <div class="col-md-5 fw-semibold">{{ option.text }}</div>
+                                <div class="col-md-7">
+                                    <select class="form-select" name="match_{{ answer.question_id }}">
+                                        <option value="{{ option.id }}::">Выберите соответствие</option>
+                                        {% for candidate in answer.options %}
+                                            {% set value = option.id ~ "::" ~ candidate.match_text %}
+                                            <option value="{{ value }}" {% if value in answer.selected_options %}selected{% endif %}>{{ candidate.match_text }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% elif answer.question_type.value == "ordering" %}
+                    <div class="d-grid gap-2">
+                        {% for option in answer.options %}
+                            <div class="row g-2 align-items-center">
+                                <div class="col-md-8">{{ option.text }}</div>
+                                <div class="col-md-4">
+                                    <select class="form-select" name="order_{{ answer.question_id }}">
+                                        {% for index in range(1, answer.options|length + 1) %}
+                                            {% set value = option.id ~ "::" ~ index %}
+                                            <option value="{{ value }}" {% if value in answer.selected_options %}selected{% endif %}>{{ index }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% elif answer.question_type.value in ["text_answer", "fill_blank"] %}
+                    <input class="form-control" type="text" name="text_{{ answer.question_id }}" value="{{ answer.text_answer or '' }}">
+                {% else %}
+                    <textarea class="form-control" rows="4" name="text_{{ answer.question_id }}">{{ answer.text_answer or '' }}</textarea>
+                {% endif %}
+            </div>
+        </div>
+    {% else %}
+        <div class="alert alert-light border">Нет вопросов для доработки.</div>
+    {% endfor %}
+
+    <div class="d-flex justify-content-between align-items-center">
+        <button class="btn btn-outline-dark btn-lg" type="button" data-prev-question>Назад</button>
+        <div class="small text-secondary" data-question-progress></div>
+        <div class="d-flex gap-2">
+            <button class="btn btn-outline-secondary btn-lg" type="button" data-skip-question>Пропустить</button>
+            <button class="btn btn-dark btn-lg" type="button" data-next-question>Далее</button>
+            <button class="btn btn-dark btn-lg" type="submit">{% if is_revision %}Отправить на проверку{% else %}Завершить тест{% endif %}</button>
+        </div>
+    </div>
+</form>
+
+<script src="/static/js/attempt-timer.js"></script>
+<script src="/static/js/attempt-status.js"></script>
+<script src="/static/js/test-taking.js"></script>
+{% endblock %}

@@ -1,0 +1,344 @@
+{
+  "title": "Основы кулинарии",
+  "description": "Тест из 30 вопросов по базовым кулинарным техникам, продуктам, безопасности и приготовлению блюд.",
+  "visibility": "private",
+  "status": "draft",
+  "settings": {
+    "time_limit_minutes": 35,
+    "max_attempts": 2,
+    "passing_score": 70,
+    "show_result": true,
+    "show_correct_answers": true,
+    "shuffle_questions": true,
+    "shuffle_answers": true
+  },
+  "questions": [
+    {
+      "type": "single_choice",
+      "text": "Что означает кулинарный термин «пассерование»?",
+      "points": 1,
+      "options": [
+        {"text": "Краткое обжаривание продукта в жире без сильной корочки", "is_correct": true},
+        {"text": "Длительное запекание в духовке", "is_correct": false},
+        {"text": "Замораживание готового блюда", "is_correct": false},
+        {"text": "Взбивание сливок до устойчивых пиков", "is_correct": false}
+      ]
+    },
+    {
+      "type": "single_choice",
+      "text": "Какая температура внутри курицы считается безопасной для готовности?",
+      "points": 1,
+      "options": [
+        {"text": "Около 74 °C", "is_correct": true},
+        {"text": "Около 45 °C", "is_correct": false},
+        {"text": "Около 55 °C", "is_correct": false},
+        {"text": "Около 62 °C", "is_correct": false}
+      ]
+    },
+    {
+      "type": "multiple_choice",
+      "text": "Какие продукты обычно входят в классический mirepoix?",
+      "points": 2,
+      "options": [
+        {"text": "Лук", "is_correct": true},
+        {"text": "Морковь", "is_correct": true},
+        {"text": "Сельдерей", "is_correct": true},
+        {"text": "Ананас", "is_correct": false}
+      ]
+    },
+    {
+      "type": "single_choice",
+      "text": "Что помогает сделать мясо мягче при мариновании?",
+      "points": 1,
+      "options": [
+        {"text": "Кислота, соль и время", "is_correct": true},
+        {"text": "Только сахарная пудра", "is_correct": false},
+        {"text": "Полное отсутствие соли", "is_correct": false},
+        {"text": "Немедленная заморозка после нарезки", "is_correct": false}
+      ]
+    },
+    {
+      "type": "single_choice",
+      "text": "Какой нож чаще всего используют для большинства базовых кухонных задач?",
+      "points": 1,
+      "options": [
+        {"text": "Шеф-нож", "is_correct": true},
+        {"text": "Нож для устриц", "is_correct": false},
+        {"text": "Филейный нож", "is_correct": false},
+        {"text": "Нож-пила только для хлеба", "is_correct": false}
+      ]
+    },
+    {
+      "type": "multiple_choice",
+      "text": "Какие способы помогают избежать перекрестного загрязнения на кухне?",
+      "points": 2,
+      "options": [
+        {"text": "Использовать отдельные доски для сырого мяса и овощей", "is_correct": true},
+        {"text": "Мыть руки после контакта с сырым мясом", "is_correct": true},
+        {"text": "Хранить сырое мясо ниже готовых продуктов", "is_correct": true},
+        {"text": "Резать готовые продукты на доске после сырой курицы без мытья", "is_correct": false}
+      ]
+    },
+    {
+      "type": "text_answer",
+      "text": "Как называется процесс приготовления продукта в небольшом количестве жира на сковороде?",
+      "points": 1,
+      "options": [
+        {"text": "жарка", "is_correct": true},
+        {"text": "обжаривание", "is_correct": true}
+      ]
+    },
+    {
+      "type": "single_choice",
+      "text": "Что такое «аль денте»?",
+      "points": 1,
+      "options": [
+        {"text": "Степень готовности пасты с легкой упругостью внутри", "is_correct": true},
+        {"text": "Полностью разваренная паста", "is_correct": false},
+        {"text": "Соус на основе сливок", "is_correct": false},
+        {"text": "Способ нарезки овощей кубиком", "is_correct": false}
+      ]
+    },
+    {
+      "type": "single_choice",
+      "text": "Для чего просеивают муку перед замешиванием теста?",
+      "points": 1,
+      "options": [
+        {"text": "Чтобы насытить ее воздухом и убрать комочки", "is_correct": true},
+        {"text": "Чтобы полностью удалить клейковину", "is_correct": false},
+        {"text": "Чтобы сделать муку соленой", "is_correct": false},
+        {"text": "Чтобы заменить разрыхлитель", "is_correct": false}
+      ]
+    },
+    {
+      "type": "multiple_choice",
+      "text": "Какие ингредиенты часто входят в базовый винегретный соус?",
+      "points": 2,
+      "options": [
+        {"text": "Растительное масло", "is_correct": true},
+        {"text": "Уксус или лимонный сок", "is_correct": true},
+        {"text": "Соль и перец", "is_correct": true},
+        {"text": "Желатин", "is_correct": false}
+      ]
+    },
+    {
+      "type": "single_choice",
+      "text": "Что означает «деглазировать» сковороду?",
+      "points": 1,
+      "options": [
+        {"text": "Добавить жидкость, чтобы растворить поджаристые частицы со дна", "is_correct": true},
+        {"text": "Охладить сковороду льдом", "is_correct": false},
+        {"text": "Покрыть сковороду сахарной глазурью", "is_correct": false},
+        {"text": "Полностью очистить сковороду моющим средством во время готовки", "is_correct": false}
+      ]
+    },
+    {
+      "type": "single_choice",
+      "text": "Какой продукт является основой соуса бешамель?",
+      "points": 1,
+      "options": [
+        {"text": "Молоко", "is_correct": true},
+        {"text": "Томатный сок", "is_correct": false},
+        {"text": "Соевый соус", "is_correct": false},
+        {"text": "Куриный фарш", "is_correct": false}
+      ]
+    },
+    {
+      "type": "multiple_choice",
+      "text": "Какие признаки могут говорить, что рыба свежая?",
+      "points": 2,
+      "options": [
+        {"text": "Ясные выпуклые глаза", "is_correct": true},
+        {"text": "Упругая мякоть", "is_correct": true},
+        {"text": "Свежий морской или нейтральный запах", "is_correct": true},
+        {"text": "Резкий аммиачный запах", "is_correct": false}
+      ]
+    },
+    {
+      "type": "single_choice",
+      "text": "Как называется смесь муки и жира, используемая для загущения соусов?",
+      "points": 1,
+      "options": [
+        {"text": "Ру", "is_correct": true},
+        {"text": "Песто", "is_correct": false},
+        {"text": "Конфи", "is_correct": false},
+        {"text": "Суфле", "is_correct": false}
+      ]
+    },
+    {
+      "type": "text_answer",
+      "text": "Как называется метод приготовления в вакуумном пакете при точно контролируемой низкой температуре?",
+      "points": 1,
+      "options": [
+        {"text": "су-вид", "is_correct": true},
+        {"text": "sous vide", "is_correct": true},
+        {"text": "sous-vide", "is_correct": true}
+      ]
+    },
+    {
+      "type": "single_choice",
+      "text": "Почему мясу часто дают отдохнуть после жарки или запекания?",
+      "points": 1,
+      "options": [
+        {"text": "Чтобы соки равномернее распределились внутри", "is_correct": true},
+        {"text": "Чтобы оно снова стало сырым", "is_correct": false},
+        {"text": "Чтобы полностью исчез аромат", "is_correct": false},
+        {"text": "Чтобы снизить содержание белка", "is_correct": false}
+      ]
+    },
+    {
+      "type": "multiple_choice",
+      "text": "Какие продукты являются источниками умами?",
+      "points": 2,
+      "options": [
+        {"text": "Пармезан", "is_correct": true},
+        {"text": "Грибы", "is_correct": true},
+        {"text": "Соевый соус", "is_correct": true},
+        {"text": "Дистиллированная вода", "is_correct": false}
+      ]
+    },
+    {
+      "type": "single_choice",
+      "text": "Что обычно делает разрыхлитель в выпечке?",
+      "points": 1,
+      "options": [
+        {"text": "Помогает тесту подниматься за счет выделения газа", "is_correct": true},
+        {"text": "Полностью заменяет муку", "is_correct": false},
+        {"text": "Делает блюдо соленым", "is_correct": false},
+        {"text": "Предотвращает нагрев духовки", "is_correct": false}
+      ]
+    },
+    {
+      "type": "single_choice",
+      "text": "Что лучше всего подходит для измерения точной температуры готовности мяса?",
+      "points": 1,
+      "options": [
+        {"text": "Кухонный термометр", "is_correct": true},
+        {"text": "Цвет тарелки", "is_correct": false},
+        {"text": "Количество соли в рецепте", "is_correct": false},
+        {"text": "Размер кастрюли", "is_correct": false}
+      ]
+    },
+    {
+      "type": "multiple_choice",
+      "text": "Какие способы приготовления относятся к влажному нагреву?",
+      "points": 2,
+      "options": [
+        {"text": "Варка", "is_correct": true},
+        {"text": "Тушение", "is_correct": true},
+        {"text": "Приготовление на пару", "is_correct": true},
+        {"text": "Жарка во фритюре", "is_correct": false}
+      ]
+    },
+    {
+      "type": "single_choice",
+      "text": "Какой рис чаще всего используют для ризотто?",
+      "points": 1,
+      "options": [
+        {"text": "Арборио", "is_correct": true},
+        {"text": "Жасмин", "is_correct": false},
+        {"text": "Басмати", "is_correct": false},
+        {"text": "Дикий рис", "is_correct": false}
+      ]
+    },
+    {
+      "type": "single_choice",
+      "text": "Что такое бланширование?",
+      "points": 1,
+      "options": [
+        {"text": "Краткая обработка кипятком с последующим охлаждением", "is_correct": true},
+        {"text": "Длительная ферментация теста", "is_correct": false},
+        {"text": "Копчение при низкой температуре", "is_correct": false},
+        {"text": "Обжаривание в сахаре", "is_correct": false}
+      ]
+    },
+    {
+      "type": "multiple_choice",
+      "text": "Что помогает получить хрустящую корочку при жарке картофеля?",
+      "points": 2,
+      "options": [
+        {"text": "Удалить лишнюю влагу с поверхности", "is_correct": true},
+        {"text": "Хорошо разогреть сковороду или масло", "is_correct": true},
+        {"text": "Не перегружать сковороду", "is_correct": true},
+        {"text": "Добавить как можно больше воды в конце жарки", "is_correct": false}
+      ]
+    },
+    {
+      "type": "text_answer",
+      "text": "Как называется ароматная зелень, которую часто добавляют в конце приготовления для свежести вкуса?",
+      "points": 1,
+      "options": [
+        {"text": "петрушка", "is_correct": true},
+        {"text": "укроп", "is_correct": true},
+        {"text": "кинза", "is_correct": true},
+        {"text": "базилик", "is_correct": true}
+      ]
+    },
+    {
+      "type": "single_choice",
+      "text": "Что происходит с белком яйца при нагревании?",
+      "points": 1,
+      "options": [
+        {"text": "Он сворачивается", "is_correct": true},
+        {"text": "Он превращается в сахар", "is_correct": false},
+        {"text": "Он полностью испаряется", "is_correct": false},
+        {"text": "Он становится сырым", "is_correct": false}
+      ]
+    },
+    {
+      "type": "single_choice",
+      "text": "Какой способ нарезки означает мелкие кубики?",
+      "points": 1,
+      "options": [
+        {"text": "Брюнуаз", "is_correct": true},
+        {"text": "Жюльен", "is_correct": false},
+        {"text": "Шифонад", "is_correct": false},
+        {"text": "Карпаччо", "is_correct": false}
+      ]
+    },
+    {
+      "type": "multiple_choice",
+      "text": "Какие факторы влияют на вкус супа или бульона?",
+      "points": 2,
+      "options": [
+        {"text": "Качество исходных продуктов", "is_correct": true},
+        {"text": "Время приготовления", "is_correct": true},
+        {"text": "Баланс соли, кислоты и специй", "is_correct": true},
+        {"text": "Цвет ручки кастрюли", "is_correct": false}
+      ]
+    },
+    {
+      "type": "single_choice",
+      "text": "Зачем солят воду при варке пасты?",
+      "points": 1,
+      "options": [
+        {"text": "Чтобы паста получила вкус во время варки", "is_correct": true},
+        {"text": "Чтобы паста не могла свариться", "is_correct": false},
+        {"text": "Чтобы вода стала холоднее", "is_correct": false},
+        {"text": "Чтобы заменить соус", "is_correct": false}
+      ]
+    },
+    {
+      "type": "free_answer",
+      "text": "Назовите один способ сделать блюдо более сбалансированным по вкусу.",
+      "points": 1,
+      "options": [
+        {"text": "добавить кислоту", "is_correct": true},
+        {"text": "добавить соль", "is_correct": true},
+        {"text": "добавить сладость", "is_correct": true},
+        {"text": "добавить специи", "is_correct": true}
+      ]
+    },
+    {
+      "type": "single_choice",
+      "text": "Что важно сделать перед тем, как резать горячее запеченное мясо?",
+      "points": 1,
+      "options": [
+        {"text": "Дать ему немного отдохнуть", "is_correct": true},
+        {"text": "Сразу промыть его холодной водой", "is_correct": false},
+        {"text": "Положить в морозильник на час", "is_correct": false},
+        {"text": "Полностью удалить всю корочку", "is_correct": false}
+      ]
+    }
+  ]
+}

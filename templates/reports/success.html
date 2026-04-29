@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+{% block title %}Отчет создан{% endblock %}
+{% block content %}
+<div class="alert alert-success">Отчет {{ report.report_number }} успешно сформирован.</div>
+<a class="btn btn-primary" href="/reports/{{ report.id }}/download">Скачать PDF</a>
+<a class="btn btn-outline-secondary" href="/reports">К списку</a>
+{% endblock %}

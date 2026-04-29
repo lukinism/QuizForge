@@ -1,0 +1,14 @@
+{% extends "base_report.html" %}
+{% block report_content %}
+{% include "partials/statistics.html" %}
+{% include "partials/charts.html" %}
+<h2>Попытки за период</h2>
+<table>
+<tr><th>Дата</th><th>Пользователь</th><th>Тест</th><th>Группа</th><th>Баллы</th><th>%</th><th>Статус</th></tr>
+{% for attempt in attempts %}
+{% set user = users.get(attempt.user_id) %}
+{% set test = tests.get(attempt.test_id) %}
+<tr><td>{{ attempt.started_at.strftime("%d.%m.%Y %H:%M") }}</td><td>{{ user.username if user else "Неизвестно" }}</td><td>{{ test.title if test else attempt.test_title }}</td><td>{{ groups.get(attempt.user_id, [])|map(attribute="title")|join(", ") }}</td><td>{{ attempt.score }}</td><td>{{ attempt.percent }}</td><td>{{ attempt.status.value }}</td></tr>
+{% endfor %}
+</table>
+{% endblock %}

@@ -1,0 +1,183 @@
+{% extends "base.html" %}
+{% block title %}{{ group.title }}{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-start mb-4">
+    <div>
+        <h1 class="h3 mb-1">{{ group.title }}</h1>
+        <p class="text-secondary mb-0">{{ group.description or "Без описания" }}</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a class="btn btn-outline-dark" href="/groups">К списку</a>
+        <a class="btn btn-dark" href="/groups/{{ group.id }}/edit">Редактировать</a>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-xl-4">
+        <div class="card shadow-sm border-0">
+            <div class="card-body">
+                <h2 class="h5 mb-3">Выдать тест группе</h2>
+                <form action="/groups/{{ group.id }}/assignments" method="post" class="d-grid gap-3">
+                    <div>
+                        <label class="form-label">Тест</label>
+                        <select class="form-select" name="test_id" required>
+                            <option value="">Выберите опубликованный тест</option>
+                            {% for test in published_tests %}
+                                <option value="{{ test.id }}">{{ test.title }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <button class="btn btn-dark" type="submit">Выдать тест</button>
+                </form>
+                {% if not published_tests %}
+                    <div class="small text-secondary mt-3">Нет опубликованных тестов для выдачи.</div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="card shadow-sm border-0 mt-4">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h2 class="h5 mb-0">Ссылки вступления</h2>
+                    <form action="/groups/{{ group.id }}/links" method="post">
+                        <button class="btn btn-sm btn-dark" type="submit">Создать ссылку</button>
+                    </form>
+                </div>
+                {% for link in invite_links %}
+                    <div class="border rounded p-3 mb-3">
+                        <div class="small text-secondary mb-1">Ссылка</div>
+                        <div class="small text-break mb-2">{{ base_url }}groups/join/{{ link.token }}</div>
+                        <div class="small text-secondary mb-2">
+                            Создана: {{ link.created_at|datetime_label }}
+                            {% if not link.is_active %}<span class="badge text-bg-secondary ms-1">Отозвана</span>{% endif %}
+                        </div>
+                        {% if link.is_active %}
+                            <form action="/groups/{{ group.id }}/links/{{ link.id }}/revoke" method="post">
+                                <button class="btn btn-sm btn-outline-danger" type="submit">Отозвать ссылку</button>
+                            </form>
+                        {% endif %}
+                    </div>
+                {% else %}
+                    <div class="text-secondary">Ссылок пока нет.</div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-8">
+        <div class="card shadow-sm border-0">
+            <div class="card-body">
+                <h2 class="h5 mb-3">Выданные тесты</h2>
+                <div class="table-responsive">
+                    <table class="table align-middle">
+                        <thead><tr><th>Тест</th><th>Статус</th><th>Выдан</th><th></th></tr></thead>
+                        <tbody>
+                        {% for assignment in assignments %}
+                            {% set test = assignment_tests_by_id.get(assignment.test_id) %}
+                            <tr>
+                                <td>{{ test.title if test else assignment.test_id }}</td>
+                                <td>
+                                    {% if assignment.is_active %}
+                                        <span class="badge text-bg-success">Активна</span>
+                                    {% else %}
+                                        <span class="badge text-bg-secondary">Завершена</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ assignment.created_at|datetime_label }}</td>
+                                <td><a class="btn btn-sm btn-outline-dark" href="/tests/assignments/{{ assignment.id }}/monitor">Мониторинг</a></td>
+                            </tr>
+                        {% else %}
+                            <tr><td colspan="4" class="text-secondary">Тесты этой группе пока не выдавались.</td></tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow-sm border-0 mt-4">
+            <div class="card-body">
+                <h2 class="h5 mb-3">Участники группы</h2>
+                <div class="table-responsive">
+                    <table class="table align-middle">
+                        <thead><tr><th>Пользователь</th><th>Email</th><th>Действия</th></tr></thead>
+                        <tbody>
+                        {% for member_id in group.members %}
+                            {% set member = users_by_id.get(member_id) %}
+                            {% if member %}
+                                <tr>
+                                    <td>{{ member.full_name or member.username }}</td>
+                                    <td>{{ member.email }}</td>
+                                    <td>
+                                        <div class="d-flex gap-2">
+                                            <form action="/groups/{{ group.id }}/members/{{ member.id }}/remove" method="post">
+                                                <button class="btn btn-sm btn-outline-secondary" type="submit">Удалить</button>
+                                            </form>
+                                            <form action="/groups/{{ group.id }}/members/{{ member.id }}/block" method="post">
+                                                <button class="btn btn-sm btn-outline-danger" type="submit">Заблокировать</button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endif %}
+                        {% else %}
+                            <tr><td colspan="3" class="text-secondary">Участников пока нет.</td></tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow-sm border-0 mt-4">
+            <div class="card-body">
+                <h2 class="h5 mb-3">Кто присоединился по ссылке</h2>
+                <div class="table-responsive">
+                    <table class="table align-middle">
+                        <thead><tr><th>Пользователь</th><th>Email</th><th>Когда</th></tr></thead>
+                        <tbody>
+                        {% for event in join_events %}
+                            {% set member = users_by_id.get(event.user_id) %}
+                            <tr>
+                                <td>{% if member %}{{ member.full_name or member.username }}{% else %}{{ event.user_id }}{% endif %}</td>
+                                <td>{{ member.email if member else "Пользователь не найден" }}</td>
+                                <td>{{ event.joined_at|datetime_label }}</td>
+                            </tr>
+                        {% else %}
+                            <tr><td colspan="3" class="text-secondary">По ссылкам пока никто не вступал.</td></tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow-sm border-0 mt-4">
+            <div class="card-body">
+                <h2 class="h5 mb-3">Заблокированные в группе</h2>
+                <div class="table-responsive">
+                    <table class="table align-middle">
+                        <thead><tr><th>Пользователь</th><th>Email</th><th>Действие</th></tr></thead>
+                        <tbody>
+                        {% for member_id in group.blocked_members %}
+                            {% set member = users_by_id.get(member_id) %}
+                            <tr>
+                                <td>{% if member %}{{ member.full_name or member.username }}{% else %}{{ member_id }}{% endif %}</td>
+                                <td>{{ member.email if member else "Пользователь не найден" }}</td>
+                                <td>
+                                    <form action="/groups/{{ group.id }}/members/{{ member_id }}/unblock" method="post">
+                                        <button class="btn btn-sm btn-outline-dark" type="submit">Разблокировать</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        {% else %}
+                            <tr><td colspan="3" class="text-secondary">Заблокированных участников нет.</td></tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

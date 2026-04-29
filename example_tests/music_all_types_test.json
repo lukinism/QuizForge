@@ -1,0 +1,152 @@
+{
+  "title": "Музыка: все типы заданий",
+  "description": "Демонстрационный тест по музыке со всеми поддерживаемыми типами вопросов.",
+  "visibility": "private",
+  "status": "draft",
+  "settings": {
+    "time_limit_minutes": 40,
+    "max_attempts": 2,
+    "passing_score": 70,
+    "show_result": true,
+    "show_correct_answers": true,
+    "shuffle_questions": false,
+    "shuffle_answers": false,
+    "instruction_enabled": true,
+    "instruction_text": "Внимательно прочитайте задания. В медиа-вопросах используйте демонстрационные материалы или замените ссылки на свои файлы перед выдачей теста.",
+    "flow_mode": "one_by_one",
+    "allow_question_skip": true
+  },
+  "questions": [
+    {
+      "type": "single_choice",
+      "text": "Какой инструмент относится к струнным смычковым?",
+      "points": 1,
+      "options": [
+        {"text": "Скрипка", "is_correct": true},
+        {"text": "Флейта", "is_correct": false},
+        {"text": "Труба", "is_correct": false},
+        {"text": "Барабан", "is_correct": false}
+      ]
+    },
+    {
+      "type": "multiple_choice",
+      "text": "Какие элементы относятся к основным характеристикам музыки?",
+      "points": 2,
+      "options": [
+        {"text": "Ритм", "is_correct": true},
+        {"text": "Мелодия", "is_correct": true},
+        {"text": "Гармония", "is_correct": true},
+        {"text": "Температура воздуха", "is_correct": false}
+      ]
+    },
+    {
+      "type": "text_answer",
+      "text": "Как называется скорость исполнения музыкального произведения?",
+      "points": 1,
+      "options": [
+        {"text": "темп", "is_correct": true}
+      ]
+    },
+    {
+      "type": "free_answer",
+      "text": "Развернутый ответ: объясните, чем музыкальный жанр отличается от музыкального стиля. Приведите один пример.",
+      "points": 3,
+      "options": []
+    },
+    {
+      "type": "matching",
+      "text": "Установите соответствие между термином и значением.",
+      "points": 3,
+      "options": [
+        {"text": "Форте", "match_text": "Громко", "is_correct": false},
+        {"text": "Пиано", "match_text": "Тихо", "is_correct": false},
+        {"text": "Аллегро", "match_text": "Быстро", "is_correct": false}
+      ]
+    },
+    {
+      "type": "ordering",
+      "text": "Расположите ноты гаммы до мажор по порядку.",
+      "points": 3,
+      "options": [
+        {"text": "До", "order_index": 1, "is_correct": false},
+        {"text": "Ре", "order_index": 2, "is_correct": false},
+        {"text": "Ми", "order_index": 3, "is_correct": false},
+        {"text": "Фа", "order_index": 4, "is_correct": false},
+        {"text": "Соль", "order_index": 5, "is_correct": false}
+      ]
+    },
+    {
+      "type": "fill_blank",
+      "text": "Заполните пропуск: знак # в нотной записи называется ______.",
+      "points": 1,
+      "options": [
+        {"text": "диез", "is_correct": true}
+      ]
+    },
+    {
+      "type": "image",
+      "text": "Посмотрите на изображение нотного стана. Как называется знак в начале строки?",
+      "points": 1,
+      "media_url": "https://upload.wikimedia.org/wikipedia/commons/6/6f/Treble_a.svg",
+      "options": [
+        {"text": "Скрипичный ключ", "is_correct": true},
+        {"text": "Басовый ключ", "is_correct": false},
+        {"text": "Пауза", "is_correct": false},
+        {"text": "Лига", "is_correct": false}
+      ]
+    },
+    {
+      "type": "audio",
+      "text": "Прослушайте аудио. Какой инструмент звучит?",
+      "points": 1,
+      "media_url": "https://upload.wikimedia.org/wikipedia/commons/4/4f/Bach_-_Brandenburg_Concerto_No._3_-_1._Allegro.ogg",
+      "options": [
+        {"text": "Струнные инструменты", "is_correct": true},
+        {"text": "Соло барабанов", "is_correct": false},
+        {"text": "Электрогитара с дисторшном", "is_correct": false},
+        {"text": "Синтезаторный бас", "is_correct": false}
+      ]
+    },
+    {
+      "type": "video",
+      "text": "Посмотрите видео с исполнением. Что делает дирижёр?",
+      "points": 1,
+      "media_url": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
+      "options": [
+        {"text": "Управляет темпом и вступлениями музыкантов", "is_correct": true},
+        {"text": "Настраивает струны во время паузы", "is_correct": false},
+        {"text": "Записывает партитуру на сцене", "is_correct": false},
+        {"text": "Меняет микрофоны у вокалистов", "is_correct": false}
+      ]
+    },
+    {
+      "type": "file",
+      "text": "Откройте файл с краткой партитурой. Как обычно называется нотная запись для нескольких инструментов?",
+      "points": 1,
+      "media_url": "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
+      "options": [
+        {"text": "Партитура", "is_correct": true},
+        {"text": "Метроном", "is_correct": false},
+        {"text": "Камертон", "is_correct": false},
+        {"text": "Аккордеон", "is_correct": false}
+      ]
+    },
+    {
+      "type": "code",
+      "text": "Посмотрите на код. Какой музыкальный интервал возвращает функция?",
+      "points": 1,
+      "code_language": "python",
+      "code_snippet": "def interval():\n    notes = ['до', 'ре', 'ми']\n    return notes[0], notes[2]",
+      "options": [
+        {"text": "терция", "is_correct": true},
+        {"text": "кварта", "is_correct": true}
+      ]
+    },
+    {
+      "type": "practical",
+      "text": "Практическое задание: составьте короткую последовательность из четырёх нот, начинающуюся с ноты до, и объясните, какое настроение она создаёт.",
+      "points": 4,
+      "options": []
+    }
+  ]
+}

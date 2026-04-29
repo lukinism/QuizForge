@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Проверка отчета{% endblock %}
+{% block public_content %}
+<div class="mx-auto" style="max-width: 720px;">
+    {% if is_valid %}
+        <div class="alert alert-success">Отчет действителен.</div>
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h1 class="h4">{{ report.report_number }}</h1>
+                <dl class="row mb-0">
+                    <dt class="col-sm-4">Тип</dt>
+                    <dd class="col-sm-8">{{ report.type.value }}</dd>
+                    <dt class="col-sm-4">Дата формирования</dt>
+                    <dd class="col-sm-8">{{ report.created_at|datetime_label }}</dd>
+                    <dt class="col-sm-4">Кем сформирован</dt>
+                    <dd class="col-sm-8">{{ generated_by.full_name or generated_by.username if generated_by else "Неизвестно" }}</dd>
+                    <dt class="col-sm-4">Название</dt>
+                    <dd class="col-sm-8">{{ report.title }}</dd>
+                </dl>
+            </div>
+        </div>
+    {% else %}
+        <div class="alert alert-danger">Отчет с таким номером не найден.</div>
+    {% endif %}
+</div>
+{% endblock %}

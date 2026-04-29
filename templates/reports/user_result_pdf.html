@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: DejaVu Sans, sans-serif; font-size: 12px; color: #1f2937; }
+        h1, h2 { margin: 0 0 10px; }
+        table { width: 100%; border-collapse: collapse; margin: 12px 0; }
+        th, td { border: 1px solid #d1d5db; padding: 8px; vertical-align: top; }
+        th { background: #f3f4f6; text-align: left; }
+        .meta { margin-bottom: 16px; }
+        .muted { color: #6b7280; }
+    </style>
+</head>
+<body>
+    <h1>Отчет по пользователю</h1>
+    <div class="meta">
+        <div><strong>Пользователь:</strong> {{ participant.full_name or participant.username if participant else attempt.user_id }} / {{ participant.email if participant else "" }}</div>
+        <div><strong>Тест:</strong> {{ test.title if test else attempt.test_title }}</div>
+        <div><strong>Дата прохождения:</strong> {{ (attempt.finished_at or attempt.started_at)|datetime_label }}</div>
+        <div><strong>Начало:</strong> {{ attempt.started_at|datetime_label }}</div>
+        <div><strong>Окончание:</strong> {{ attempt.finished_at|datetime_label if attempt.finished_at else "—" }}</div>
+        <div><strong>Потраченное время:</strong> {{ duration }}</div>
+        <div><strong>Баллы:</strong> {{ attempt.score }} / {{ attempt.max_score }}</div>
+        <div><strong>Процент:</strong> {{ attempt.percent }}%</div>
+        <div><strong>Результат:</strong> {% if attempt.is_passed %}Сдал{% else %}Не сдал{% endif %}</div>
+    </div>
+
+    <h2>Ответы пользователя</h2>
+    <table>
+        <thead>
+        <tr>
+            <th>#</th>
+            <th>Вопрос</th>
+            <th>Ответ пользователя</th>
+            <th>Правильный ответ</th>
+            <th>Баллы</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for answer in attempt.answers %}
+            <tr>
+                <td>{{ loop.index }}</td>
+                <td>{{ answer.question_text }}</td>
+                <td>
+                    {% if answer.question_type.value in ["single_choice", "multiple_choice"] %}
+                        {% for option in answer.options if option.id in answer.selected_options %}
+                            {{ option.text }}{% if not loop.last %}, {% endif %}
+                        {% else %}
+                            —
+                        {% endfor %}
+                    {% else %}
+                        {{ answer.text_answer or "—" }}
+                    {% endif %}
+                </td>
+                <td>
+                    {% for option in answer.options if option.is_correct %}
+                        {{ option.text }}{% if not loop.last %}, {% endif %}
+                    {% else %}
+                        —
+                    {% endfor %}
+                </td>
+                <td>{{ answer.points_received }} / {{ answer.max_points }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

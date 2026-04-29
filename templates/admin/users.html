@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}Пользователи{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h3 mb-1">Пользователи</h1>
+        <p class="text-secondary mb-0">Назначение ролей и блокировка аккаунтов.</p>
+    </div>
+</div>
+
+<div class="card shadow-sm border-0">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead>
+                <tr>
+                    <th>Пользователь</th>
+                    <th>Текущая роль</th>
+                    <th>Статус</th>
+                    <th>Изменить роль</th>
+                    <th>Действие</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for user in users %}
+                    <tr>
+                        <td>
+                            <div class="fw-semibold">{{ user.full_name or user.username }}</div>
+                            <div class="small text-secondary">{{ user.email }}</div>
+                        </td>
+                        <td><span class="badge text-bg-secondary">{{ user.role|enum_label }}</span></td>
+                        <td>
+                            {% if user.is_active %}
+                                <span class="badge text-bg-success">Активен</span>
+                            {% else %}
+                                <span class="badge text-bg-danger">Заблокирован</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <form action="/users/{{ user.id }}/role" method="post" class="d-flex gap-2">
+                                <select class="form-select form-select-sm" name="role">
+                                    {% for role in roles %}
+                                        <option value="{{ role.value }}" {% if role.value == user.role.value %}selected{% endif %}>{{ role|enum_label }}</option>
+                                    {% endfor %}
+                                </select>
+                                <button class="btn btn-sm btn-outline-dark" type="submit">Сохранить</button>
+                            </form>
+                        </td>
+                        <td>
+                            <form action="/users/{{ user.id }}/toggle-active" method="post">
+                                <button class="btn btn-sm {% if user.is_active %}btn-outline-danger{% else %}btn-outline-success{% endif %}" type="submit">
+                                    {% if user.is_active %}Заблокировать{% else %}Разблокировать{% endif %}
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="5" class="text-secondary">Пользователей пока нет.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

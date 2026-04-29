@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Мои тесты{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h3 mb-1">Мои тесты</h1>
+        <p class="text-secondary mb-0">Создание, публикация и ссылки для приватного доступа.</p>
+    </div>
+    <div class="d-flex gap-2 align-items-center">
+        <form action="/tests/import" method="post" enctype="multipart/form-data" class="d-flex gap-2 align-items-center">
+            <input class="form-control" type="file" name="json_file" accept="application/json,.json" required>
+            <button class="btn btn-outline-dark test-action-button" type="submit">Импорт JSON</button>
+        </form>
+        <a class="btn btn-dark test-action-button" href="/tests/create">Создать тест</a>
+    </div>
+</div>
+{% if error %}
+    <div class="alert alert-danger">{{ error }}</div>
+{% endif %}
+{% include "examiner/_tests_table.html" %}
+{% endblock %}

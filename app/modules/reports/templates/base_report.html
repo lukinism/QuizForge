@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        @page { size: A4; margin: 16mm 14mm; @bottom-right { content: "Отчет {{ report_number }} · " counter(page); font-size: 9px; color: #6c757d; } }
+        body { font-family: DejaVu Sans, Arial, sans-serif; color: #212529; font-size: 12px; line-height: 1.45; }
+        h1 { font-size: 22px; margin: 0 0 6px; }
+        h2 { font-size: 15px; margin: 20px 0 8px; border-bottom: 1px solid #dee2e6; padding-bottom: 4px; }
+        table { width: 100%; border-collapse: collapse; margin: 8px 0 16px; table-layout: fixed; }
+        th, td { border: 1px solid #dee2e6; padding: 6px; vertical-align: top; overflow-wrap: anywhere; word-break: break-word; }
+        th { background: #f1f3f5; text-align: left; }
+        .meta { color: #6c757d; margin-bottom: 14px; }
+        .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+        .stat { border: 1px solid #dee2e6; padding: 8px; background: #f8f9fa; }
+        .stat strong { display: block; font-size: 16px; }
+        .bar { height: 12px; background: #e9ecef; margin: 4px 0 8px; }
+        .bar span { display: block; height: 12px; }
+        .signature { margin-top: 28px; display: flex; justify-content: space-between; }
+        .qr { float: right; width: 96px; text-align: center; font-size: 9px; color: #6c757d; }
+        .qr img { width: 84px; height: 84px; }
+    </style>
+</head>
+<body>
+{% if qr_data_uri %}
+    <div class="qr"><img src="{{ qr_data_uri }}" alt="QR"><div>{{ verify_url }}</div></div>
+{% endif %}
+<h1>{{ title }}</h1>
+<div class="meta">
+    Номер: {{ report_number }} · Сформирован: {{ created_at.strftime("%d.%m.%Y %H:%M") }} ·
+    Пользователь: {{ generated_by.full_name or generated_by.username }}
+</div>
+
+<h2>Фильтры</h2>
+<table>
+    <tbody>
+    {% for key, value in filters.items() %}
+        <tr><th>{{ key }}</th><td>{{ value }}</td></tr>
+    {% else %}
+        <tr><td>Фильтры не заданы</td></tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+{% block report_content %}{% endblock %}
+
+{% if options.include_signature %}
+    <div class="signature">
+        <div>Отчет сформирован системой<br>{{ created_at.strftime("%d.%m.%Y %H:%M") }}</div>
+        <div>Подпись: ______________________</div>
+    </div>
+{% endif %}
+</body>
+</html>

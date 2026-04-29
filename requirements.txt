@@ -1,0 +1,11 @@
+fastapi==0.136.0
+uvicorn[standard]==0.43.0
+motor==3.7.1
+jinja2==3.1.6
+python-jose[cryptography]==3.5.0
+bcrypt==5.0.0
+python-multipart==0.0.26
+pydantic-settings==2.13.1
+email-validator==2.3.0
+Pillow==12.2.0
+qrcode[pil]==8.2

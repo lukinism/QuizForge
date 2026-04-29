@@ -1,0 +1,21 @@
+{% extends "base_report.html" %}
+{% block report_content %}
+<h2>Тест</h2>
+<table>
+<tr><th>Название</th><td>{{ test.title }}</td><th>Автор</th><td>{{ author.full_name or author.username if author else "Неизвестно" }}</td></tr>
+<tr><th>Описание</th><td colspan="3">{{ test.description }}</td></tr>
+<tr><th>Статус</th><td>{{ test.status.value }}</td><th>Доступ</th><td>{{ test.visibility.value }}</td></tr>
+<tr><th>Вопросов</th><td>{{ len(test.questions) }}</td><th>Максимальный балл</th><td>{{ max_score }}</td></tr>
+<tr><th>Проходной балл</th><td>{{ test.settings.passing_score }}%</td><th>Создан</th><td>{{ test.created_at.strftime("%d.%m.%Y") }}</td></tr>
+</table>
+{% include "partials/statistics.html" %}
+{% include "partials/charts.html" %}
+<h2>Участники</h2>
+<table>
+<tr><th>№</th><th>Пользователь</th><th>Email</th><th>Дата</th><th>Баллы</th><th>%</th><th>Статус</th><th>Попытка</th></tr>
+{% for index, attempt in enumerate(attempts, 1) %}
+{% set user = users.get(attempt.user_id) %}
+<tr><td>{{ index }}</td><td>{{ user.full_name or user.username if user else "Неизвестно" }}</td><td>{{ user.email if user else "" }}</td><td>{{ attempt.started_at.strftime("%d.%m.%Y %H:%M") }}</td><td>{{ attempt.score }}/{{ attempt.max_score }}</td><td>{{ attempt.percent }}</td><td>{{ attempt.status.value }}</td><td>{{ attempt.id }}</td></tr>
+{% endfor %}
+</table>
+{% endblock %}

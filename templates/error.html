@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}Ошибка{% endblock %}
+{% block public_content %}
+<div class="text-center py-5">
+    <div class="display-5 mb-3">{{ status_code or 500 }}</div>
+    <p class="text-secondary mb-4">{{ detail or "Произошла ошибка при обработке запроса." }}</p>
+    <a class="btn btn-dark" href="/">На главную</a>
+</div>
+{% endblock %}

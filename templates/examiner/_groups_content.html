@@ -1,0 +1,39 @@
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h3 mb-1">Группы</h1>
+        <p class="text-secondary mb-0">Список групп, созданных в вашей зоне доступа.</p>
+    </div>
+    <a class="btn btn-dark" href="/groups/create">Создать группу</a>
+</div>
+
+<div class="card shadow-sm border-0">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead>
+                    <tr>
+                        <th>Название группы</th>
+                        <th>Кол-во участников</th>
+                        <th>О группе</th>
+                        <th>Редактировать группу</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for group in groups %}
+                    <tr>
+                        <td>
+                            <div class="fw-semibold">{{ group.title }}</div>
+                            <div class="small text-secondary">{{ group.description or "Без описания" }}</div>
+                        </td>
+                        <td>{{ group.members|length }}</td>
+                        <td><a class="btn btn-sm btn-outline-dark" href="/groups/{{ group.id }}">О группе</a></td>
+                        <td><a class="btn btn-sm btn-outline-secondary" href="/groups/{{ group.id }}/edit">Редактировать</a></td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="4" class="text-secondary">Группы пока не созданы.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

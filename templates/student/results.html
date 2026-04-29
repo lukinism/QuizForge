@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Мои результаты{% endblock %}
+{% block public_content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h3 mb-1">Мои результаты</h1>
+        <p class="text-secondary mb-0">История прохождений и просмотр доступных результатов.</p>
+    </div>
+    <a class="btn btn-outline-dark" href="/student">Назад</a>
+</div>
+
+<div class="card shadow-sm border-0">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead><tr><th>Тест</th><th>Статус</th><th>Баллы</th><th>Действие</th></tr></thead>
+                <tbody>
+                {% for attempt in attempts %}
+                    <tr>
+                        <td>{{ attempt.test_title }}</td>
+                        <td>
+                            <span class="badge {% if attempt.status.value == 'pending_review' %}text-bg-warning{% elif attempt.status.value == 'revision_requested' %}text-bg-info{% else %}text-bg-secondary{% endif %}">
+                                {{ attempt.status|enum_label }}
+                            </span>
+                        </td>
+                        <td>{{ attempt.score }} / {{ attempt.max_score }}</td>
+                        <td><a class="btn btn-sm btn-outline-dark" href="/attempts/{{ attempt.id }}">Открыть</a></td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="4" class="text-secondary">Попыток пока нет.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

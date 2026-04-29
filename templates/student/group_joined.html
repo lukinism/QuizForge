@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Вступление в группу{% endblock %}
+{% block public_content %}
+<div class="card shadow-sm border-0">
+    <div class="card-body">
+        <div class="alert alert-success mb-4">
+            Вы успешно присоединились к группе «{{ group.title }}».
+        </div>
+        <h1 class="h4 mb-2">{{ group.title }}</h1>
+        <p class="text-secondary mb-4">{{ group.description or "Теперь проверяющий увидит вас в списке участников группы." }}</p>
+        <a class="btn btn-dark" href="/student">Перейти в кабинет</a>
+    </div>
+</div>
+{% endblock %}

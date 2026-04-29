@@ -1,0 +1,13 @@
+{% if options.include_statistics %}
+<h2>Статистика</h2>
+<div class="grid">
+    <div class="stat"><strong>{{ stats.attempts_count }}</strong>Всего попыток</div>
+    <div class="stat"><strong>{{ stats.finished_count }}</strong>Завершено</div>
+    <div class="stat"><strong>{{ stats.started_count }}</strong>Незавершено</div>
+    <div class="stat"><strong>{{ stats.passed_count }}</strong>Сдали</div>
+    <div class="stat"><strong>{{ stats.failed_count }}</strong>Не сдали</div>
+    <div class="stat"><strong>{{ stats.average_score }}</strong>Средний балл</div>
+    <div class="stat"><strong>{{ stats.min_score }} / {{ stats.max_score }}</strong>Мин / макс</div>
+    <div class="stat"><strong>{{ stats.success_rate }}%</strong>Успешность</div>
+</div>
+{% endif %}

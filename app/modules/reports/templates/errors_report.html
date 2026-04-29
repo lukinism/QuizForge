@@ -1,0 +1,15 @@
+{% extends "base_report.html" %}
+{% block report_content %}
+<h2>Ошибки по тесту</h2>
+<table><tr><th>Тест</th><td>{{ test.title }}</td><th>Вопросов</th><td>{{ len(test.questions) }}</td><th>Прохождений</th><td>{{ len(attempts) }}</td></tr></table>
+{% include "partials/statistics.html" %}
+{% include "partials/charts.html" %}
+<h2>Топ-5 самых сложных вопросов</h2>
+<ol>{% for row in hardest_questions %}<li>{{ row.question }} · ошибок {{ row.error_percent }}%</li>{% endfor %}</ol>
+<h2>Вопросы</h2>
+<table><tr><th>Вопрос</th><th>Всего ответов</th><th>Правильных</th><th>Ошибочных</th><th>% ошибок</th></tr>
+{% for row in question_rows %}
+<tr><td>{{ row.question }}</td><td>{{ row.total_count }}</td><td>{{ row.correct_count }}</td><td>{{ row.wrong_count }}</td><td>{{ row.error_percent }}</td></tr>
+{% endfor %}
+</table>
+{% endblock %}
