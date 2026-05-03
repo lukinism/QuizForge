@@ -1,51 +1,188 @@
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <div>
-        <h1 class="h3 mb-1">Результаты прохождений</h1>
-        <p class="text-secondary mb-0">Список попыток в вашей зоне доступа.</p>
-    </div>
-</div>
+{% set results_stats = namespace(finished=0, terminated=0, percent_sum=0) %}
+{% set test_options = namespace(ids=[]) %}
+{% for attempt in attempts %}
+    {% if attempt.status.value == "finished" %}
+        {% set results_stats.finished = results_stats.finished + 1 %}
+    {% endif %}
+    {% if attempt.status.value == "terminated" %}
+        {% set results_stats.terminated = results_stats.terminated + 1 %}
+    {% endif %}
+    {% set results_stats.percent_sum = results_stats.percent_sum + attempt.percent %}
+    {% if attempt.test_id not in test_options.ids %}
+        {% set test_options.ids = test_options.ids + [attempt.test_id] %}
+    {% endif %}
+{% endfor %}
 
-{% set review_count = attempts|selectattr("status.value", "equalto", "pending_review")|list|length %}
-{% if review_count %}
-    <div class="alert alert-warning border-0 shadow-sm">
-        Требует проверки: {{ review_count }} попытк(и). Откройте попытку, чтобы поставить баллы и подтвердить итог.
-    </div>
-{% endif %}
+<div class="results-page" data-results-page>
+    <header class="results-header">
+        <div>
+            <h1>Результаты прохождений</h1>
+            <p>Список попыток в вашей зоне доступа.</p>
+        </div>
+        <div class="results-header-actions">
+            <button class="results-toolbar-button" type="button">
+                <i data-lucide="filter"></i>
+                Фильтры
+                <i data-lucide="chevron-down"></i>
+            </button>
+            <a class="results-export-button" href="/reports/create">
+                <i data-lucide="upload"></i>
+                Экспорт
+                <i data-lucide="chevron-down"></i>
+            </a>
+        </div>
+    </header>
 
-<div class="card shadow-sm border-0">
-    <div class="card-body">
-        <div class="table-responsive">
-            <table class="table align-middle">
-                <thead><tr><th>Пользователь</th><th>Тест</th><th>Баллы</th><th>Статус</th><th>Действия</th></tr></thead>
+    <section class="results-metrics" aria-label="Сводка результатов">
+        <article class="results-metric-card">
+            <span class="results-metric-icon results-metric-blue"><i data-lucide="file-text"></i></span>
+            <div>
+                <span>Всего попыток</span>
+                <strong>{{ attempts|length }}</strong>
+            </div>
+        </article>
+        <article class="results-metric-card">
+            <span class="results-metric-icon results-metric-green"><i data-lucide="circle-check"></i></span>
+            <div>
+                <span>Завершено</span>
+                <strong>{{ results_stats.finished }}</strong>
+            </div>
+        </article>
+        <article class="results-metric-card">
+            <span class="results-metric-icon results-metric-purple"><i data-lucide="timer-reset"></i></span>
+            <div>
+                <span>Досрочно завершено</span>
+                <strong>{{ results_stats.terminated }}</strong>
+            </div>
+        </article>
+        <article class="results-metric-card">
+            <span class="results-metric-icon results-metric-orange"><i data-lucide="trophy"></i></span>
+            <div>
+                <span>Средний балл</span>
+                <strong>{% if attempts %}{{ (results_stats.percent_sum / (attempts|length))|round|int }}{% else %}0{% endif %}%</strong>
+            </div>
+        </article>
+    </section>
+
+    <section class="results-table-panel">
+        <div class="results-toolbar">
+            <label class="results-search">
+                <i data-lucide="search"></i>
+                <input type="search" placeholder="Поиск по пользователю или тесту..." data-results-search>
+            </label>
+            <div class="results-filters">
+                <label class="results-select">
+                    <select data-results-status>
+                        <option value="all">Статус: Все</option>
+                        <option value="finished">Завершена</option>
+                        <option value="terminated">Завершена досрочно</option>
+                        <option value="expired">Истекло время</option>
+                        <option value="pending_review">На проверке</option>
+                        <option value="revision_requested">На доработке</option>
+                        <option value="started">В процессе</option>
+                    </select>
+                    <i data-lucide="chevron-down"></i>
+                </label>
+                <label class="results-select">
+                    <select data-results-test>
+                        <option value="all">Тест: Все</option>
+                        {% for test_id in test_options.ids %}
+                            {% set test_item = test_map.get(test_id) %}
+                            <option value="{{ test_id }}">{{ test_item.title if test_item else test_id }}</option>
+                        {% endfor %}
+                    </select>
+                    <i data-lucide="chevron-down"></i>
+                </label>
+                <button class="results-reset-button" type="button" data-results-reset>
+                    <i data-lucide="refresh-cw"></i>
+                    Сбросить
+                </button>
+            </div>
+        </div>
+
+        <div class="results-table-wrap">
+            <table class="results-table">
+                <thead>
+                <tr>
+                    <th>Пользователь</th>
+                    <th>Тест</th>
+                    <th>Баллы</th>
+                    <th>Статус</th>
+                    <th>Действия</th>
+                </tr>
+                </thead>
                 <tbody>
                 {% for attempt in attempts %}
                     {% set participant = user_map.get(attempt.user_id) %}
                     {% set test_item = test_map.get(attempt.test_id) %}
-                    <tr>
-                        <td>{{ participant.full_name or participant.username if participant else attempt.user_id }}<div class="small text-secondary">{{ participant.email if participant else '' }}</div></td>
-                        <td>{{ test_item.title if test_item else attempt.test_title }}</td>
-                        <td>{{ attempt.score }} / {{ attempt.max_score }}<div class="small text-secondary">{{ attempt.percent }}%</div></td>
+                    {% set participant_name = participant.full_name or participant.username if participant else attempt.user_id %}
+                    {% set test_title = test_item.title if test_item else attempt.test_title %}
+                    <tr data-result-row data-user="{{ participant_name|lower }} {{ participant.email|lower if participant else '' }}" data-test-title="{{ test_title|lower }}" data-test-id="{{ attempt.test_id }}" data-status="{{ attempt.status.value }}">
                         <td>
-                            <span class="badge {% if attempt.status.value == 'pending_review' %}text-bg-warning{% elif attempt.status.value == 'revision_requested' %}text-bg-info{% else %}text-bg-secondary{% endif %}">
-                                {{ attempt.status|enum_label }}
+                            <strong>{{ participant_name }}</strong>
+                            <span>{{ participant.email if participant else "" }}</span>
+                        </td>
+                        <td>{{ test_title }}</td>
+                        <td>
+                            <strong>{{ attempt.score }} / {{ attempt.max_score }}</strong>
+                            <span>{{ attempt.percent }}%</span>
+                        </td>
+                        <td>
+                            <span class="results-status-pill results-status-{{ attempt.status.value }}">
+                                {% if attempt.status.value == "finished" %}
+                                    Завершена
+                                {% elif attempt.status.value == "terminated" %}
+                                    Завершена досрочно
+                                {% elif attempt.status.value == "expired" %}
+                                    Истекло время
+                                {% elif attempt.status.value == "pending_review" %}
+                                    На проверке
+                                {% elif attempt.status.value == "revision_requested" %}
+                                    На доработке
+                                {% elif attempt.status.value == "started" %}
+                                    В процессе
+                                {% else %}
+                                    {{ attempt.status|enum_label }}
+                                {% endif %}
                             </span>
                         </td>
-                        <td class="d-flex gap-2">
-                            <a class="btn btn-sm {% if attempt.status.value == 'pending_review' %}btn-warning{% else %}btn-outline-dark{% endif %}" href="/attempts/{{ attempt.id }}">
-                                {% if attempt.status.value == 'pending_review' %}Проверить{% else %}Открыть{% endif %}
-                            </a>
-                            {% if attempt.status.value == 'finished' %}
-                                <form action="/reports/user/{{ attempt.id }}" method="post">
-                                    <button class="btn btn-sm btn-outline-secondary" type="submit">PDF</button>
-                                </form>
-                            {% endif %}
+                        <td>
+                            <div class="results-row-actions">
+                                <a class="results-row-button" href="/attempts/{{ attempt.id }}">
+                                    {% if attempt.status.value == "pending_review" %}Проверить{% else %}Открыть{% endif %}
+                                    <i data-lucide="external-link"></i>
+                                </a>
+                                {% if attempt.status.value == "finished" %}
+                                    <form action="/reports/user/{{ attempt.id }}" method="post">
+                                        <button class="results-row-button" type="submit">
+                                            <i data-lucide="file-text"></i>
+                                            PDF
+                                        </button>
+                                    </form>
+                                {% endif %}
+                            </div>
                         </td>
                     </tr>
                 {% else %}
-                    <tr><td colspan="5" class="text-secondary">Попыток пока нет.</td></tr>
+                    <tr><td colspan="5" class="results-empty">Попыток пока нет.</td></tr>
                 {% endfor %}
                 </tbody>
             </table>
         </div>
-    </div>
+
+        <div class="results-footer">
+            <span>Показано <span data-results-visible>{{ attempts|length }}</span> из {{ attempts|length }} результатов</span>
+            <div class="results-pagination">
+                <label>
+                    <select>
+                        <option>10 на странице</option>
+                    </select>
+                    <i data-lucide="chevron-down"></i>
+                </label>
+                <button type="button" disabled><i data-lucide="chevron-left"></i></button>
+                <button class="is-current" type="button">1</button>
+                <button type="button" disabled><i data-lucide="chevron-right"></i></button>
+            </div>
+        </div>
+    </section>
 </div>

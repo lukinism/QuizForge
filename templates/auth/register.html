@@ -1,38 +1,93 @@
 {% extends "base.html" %}
 {% block title %}Регистрация{% endblock %}
 {% block public_content %}
-<div class="row justify-content-center">
-    <div class="col-md-6 col-lg-5">
-        <div class="card shadow-sm border-0">
-            <div class="card-body p-4">
-                <h1 class="h3 mb-3">Регистрация тестируемого</h1>
-                <p class="text-secondary small mb-4">После регистрации будет создан аккаунт с ролью тестируемого.</p>
-                <form action="/auth/register" method="post" class="row g-3">
-                    <div class="col-12">
-                        <label class="form-label">ФИО</label>
-                        <input class="form-control" type="text" name="full_name" value="{{ full_name or '' }}">
-                    </div>
-                    <div class="col-12">
-                        <label class="form-label">Имя пользователя</label>
-                        <input class="form-control" type="text" name="username" value="{{ username or '' }}" required>
-                    </div>
-                    <div class="col-12">
-                        <label class="form-label">Электронная почта</label>
-                        <input class="form-control" type="email" name="email" value="{{ email or '' }}" required>
-                    </div>
-                    <div class="col-12">
-                        <label class="form-label">Пароль</label>
-                        <input class="form-control" type="password" name="password" minlength="8" required>
-                    </div>
-                    <div class="col-12">
-                        <button class="btn btn-dark w-100" type="submit">Создать аккаунт</button>
-                    </div>
-                </form>
-                <div class="mt-3 small">
-                    Уже есть аккаунт? <a href="/auth/login">Войти</a>
+<div class="auth-page">
+    <section class="auth-info">
+        <div class="auth-illustration" aria-hidden="true">
+            <div class="auth-window">
+                <span></span>
+                <span></span>
+                <span></span>
+                <div class="auth-chart-bars">
+                    <b></b><b></b><b></b><b></b>
+                </div>
+                <div class="auth-chart-line"></div>
+            </div>
+            <div class="auth-floating-badge"><i data-lucide="shield-check"></i></div>
+        </div>
+
+        <div class="auth-copy">
+            <h2>Платформа для эффективного тестирования</h2>
+            <p>Создавайте тесты, проводите проверки и анализируйте результаты в едином удобном интерфейсе.</p>
+        </div>
+
+        <div class="auth-feature-list">
+            <div class="auth-feature">
+                <span><i data-lucide="circle-check"></i></span>
+                <div>
+                    <strong>Удобные инструменты</strong>
+                    <p>Создание тестов и управление заданиями</p>
+                </div>
+            </div>
+            <div class="auth-feature">
+                <span><i data-lucide="bar-chart-3"></i></span>
+                <div>
+                    <strong>Аналитика и отчёты</strong>
+                    <p>Подробная статистика и выгрузки</p>
+                </div>
+            </div>
+            <div class="auth-feature">
+                <span><i data-lucide="users"></i></span>
+                <div>
+                    <strong>Безопасность данных</strong>
+                    <p>Надёжное хранение и защита информации</p>
                 </div>
             </div>
         </div>
-    </div>
+    </section>
+
+    <section class="auth-card auth-card-register">
+        <div class="auth-card-icon"><i data-lucide="user-plus"></i></div>
+        <h1>Регистрация</h1>
+        <p>Создайте аккаунт тестируемого, чтобы проходить назначенные тесты.</p>
+
+        <form action="/auth/register" method="post" class="auth-form">
+            <label class="auth-field">
+                <span>ФИО</span>
+                <div class="auth-input">
+                    <i data-lucide="id-card"></i>
+                    <input type="text" name="full_name" value="{{ full_name or '' }}" autocomplete="name">
+                </div>
+            </label>
+            <label class="auth-field">
+                <span>Имя пользователя</span>
+                <div class="auth-input">
+                    <i data-lucide="user"></i>
+                    <input type="text" name="username" value="{{ username or '' }}" required autocomplete="username">
+                </div>
+            </label>
+            <label class="auth-field">
+                <span>Электронная почта</span>
+                <div class="auth-input">
+                    <i data-lucide="mail"></i>
+                    <input type="email" name="email" value="{{ email or '' }}" required autocomplete="email">
+                </div>
+            </label>
+            <label class="auth-field">
+                <span>Пароль</span>
+                <div class="auth-input">
+                    <i data-lucide="lock-keyhole"></i>
+                    <input type="password" name="password" minlength="8" required autocomplete="new-password" data-auth-password>
+                    <button type="button" data-auth-password-toggle aria-label="Показать пароль">
+                        <i data-lucide="eye"></i>
+                    </button>
+                </div>
+            </label>
+            <button class="auth-submit" type="submit">Создать аккаунт</button>
+        </form>
+
+        <div class="auth-divider"><span>или</span></div>
+        <div class="auth-switch">Уже есть аккаунт? <a href="/auth/login">Войти</a></div>
+    </section>
 </div>
 {% endblock %}

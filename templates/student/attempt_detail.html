@@ -30,7 +30,7 @@
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-start mb-3">
                     <div>
-                        <div class="fw-semibold">{{ loop.index }}. {{ answer.question_text }}</div>
+                        <div class="fw-semibold math-content">{{ loop.index }}. {{ answer.question_text }}</div>
                         <div class="small text-secondary">{{ answer.question_type|enum_label }} · {{ answer.points_received }}/{{ answer.max_points }}</div>
                     </div>
                     {% if answer.requires_manual_review and not answer.manual_reviewed %}
@@ -65,7 +65,7 @@
                     <div class="small text-secondary mb-2">Ваш ответ</div>
                     <ul class="mb-3">
                         {% for option in answer.options if option.id in answer.selected_options %}
-                            <li>{{ option.text }}</li>
+                            <li class="math-content">{{ option.text }}</li>
                         {% else %}
                             <li>Нет ответа</li>
                         {% endfor %}
@@ -94,11 +94,11 @@
                     <ul class="mb-0">
                         {% for option in answer.options %}
                             {% if option.is_correct %}
-                                <li>{{ option.text }}</li>
+                                <li class="math-content">{{ option.text }}</li>
                             {% elif answer.question_type.value == "matching" %}
-                                <li>{{ option.text }} → {{ option.match_text }}</li>
+                                <li class="math-content">{{ option.text }} → {{ option.match_text }}</li>
                             {% elif answer.question_type.value == "ordering" %}
-                                <li>{{ option.order_index }}. {{ option.text }}</li>
+                                <li class="math-content">{{ option.order_index }}. {{ option.text }}</li>
                             {% endif %}
                         {% else %}
                             <li>Не заданы</li>

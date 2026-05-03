@@ -1,104 +1,342 @@
-<div class="d-flex justify-content-between align-items-center mb-4">
+{% set active_link = test_links[0] if test_links else none %}
+{% set type_counts = namespace(single_choice=0, multiple_choice=0, text_answer=0, audio=0, video=0, other=0) %}
+{% for question in test.questions %}
+    {% if question.type.value == "single_choice" %}
+        {% set type_counts.single_choice = type_counts.single_choice + 1 %}
+    {% elif question.type.value == "multiple_choice" %}
+        {% set type_counts.multiple_choice = type_counts.multiple_choice + 1 %}
+    {% elif question.type.value in ["text_answer", "free_answer", "fill_blank"] %}
+        {% set type_counts.text_answer = type_counts.text_answer + 1 %}
+    {% elif question.type.value == "audio" %}
+        {% set type_counts.audio = type_counts.audio + 1 %}
+    {% elif question.type.value == "video" %}
+        {% set type_counts.video = type_counts.video + 1 %}
+    {% else %}
+        {% set type_counts.other = type_counts.other + 1 %}
+    {% endif %}
+{% endfor %}
+
+<header class="editor-header">
     <div>
-        <h1 class="h3 mb-1">{{ test.title }}</h1>
-        <p class="text-secondary mb-0">Редактирование настроек, вопросов и приватных ссылок.</p>
+        <div class="editor-breadcrumbs">
+            <a href="/tests/manage">Тесты</a>
+            <span>/</span>
+            <span>Редактирование</span>
+        </div>
+        <h1>{{ test.title }}</h1>
+        <p>Редактирование настроек, вопросов и приватных ссылок</p>
     </div>
-    <div class="d-flex gap-2">
-        <a class="btn btn-outline-dark" href="/tests/manage">Назад к списку</a>
+    <div class="editor-actions">
+        <button class="btn editor-action-button" type="button" data-bs-toggle="modal" data-bs-target="#test-preview-modal">
+            <i data-lucide="eye"></i>
+            <span>Предпросмотр</span>
+        </button>
+        <a class="btn editor-action-button" href="/tests/manage">
+            <i data-lucide="arrow-left"></i>
+            <span>Назад к списку</span>
+        </a>
         <form action="/reports/test/{{ test.id }}" method="post">
-            <button class="btn btn-dark" type="submit">PDF по тесту</button>
+            <button class="btn editor-action-button editor-action-primary" type="submit">
+                <i data-lucide="file-down"></i>
+                <span>PDF по тесту</span>
+            </button>
         </form>
-        <form action="/tests/{{ test.id }}/delete" method="post">
-            <button class="btn btn-outline-danger" type="submit">Удалить тест</button>
+        <form action="/tests/{{ test.id }}/delete" method="post" onsubmit="return confirm('Точно удалить этот тест?');">
+            <button class="btn editor-action-button editor-action-danger" type="submit">
+                <i data-lucide="trash-2"></i>
+                <span>Удалить тест</span>
+            </button>
         </form>
+    </div>
+</header>
+
+<div class="editor-metrics">
+    <div class="metric-card">
+        <i class="metric-icon" data-lucide="lock-keyhole"></i>
+        <div>
+            <strong>{{ test.visibility|enum_label }}</strong>
+            <span>Видимость</span>
+        </div>
+    </div>
+    <div class="metric-card">
+        <i class="metric-icon" data-lucide="globe-2"></i>
+        <div>
+            <strong>{{ test.status|enum_label }}</strong>
+            <span>Статус</span>
+        </div>
+    </div>
+    <div class="metric-card">
+        <i class="metric-icon" data-lucide="clock-3"></i>
+        <div>
+            <strong>{% if test.settings.time_limit_minutes %}{{ test.settings.time_limit_minutes }} мин{% else %}Без лимита{% endif %}</strong>
+            <span>Лимит времени</span>
+        </div>
+    </div>
+    <div class="metric-card">
+        <i class="metric-icon" data-lucide="rotate-cw"></i>
+        <div>
+            <strong>{{ test.settings.max_attempts }} попытки</strong>
+            <span>Максимум попыток</span>
+        </div>
+    </div>
+    <div class="metric-card">
+        <i class="metric-icon metric-icon-warning" data-lucide="trophy"></i>
+        <div>
+            <strong>Проходной балл {{ test.settings.passing_score }}%</strong>
+            <span>Минимальный результат</span>
+        </div>
     </div>
 </div>
 
-{% include "examiner/_test_form.html" %}
-
-<div class="row g-4 mt-1">
-    <div class="col-xl-8">
-        <div class="card shadow-sm border-0 mt-4">
-            <div class="card-body">
-                <h2 class="h5 mb-3">Вопросы</h2>
+<div class="modal fade" id="test-preview-modal" tabindex="-1" aria-labelledby="test-preview-title" aria-hidden="true" data-test-preview-modal>
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <h2 class="modal-title h5" id="test-preview-title">{{ test.title }}</h2>
+                    <div class="small text-secondary">{{ test.description or "Без описания" }}</div>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+            </div>
+            <div class="modal-body bg-body-tertiary">
                 {% for question in test.questions %}
-                    <div class="border rounded p-3 mb-3">
-                        <form action="/tests/{{ test.id }}/questions/{{ question.id }}" method="post" enctype="multipart/form-data" class="question-editor">
-                            <div class="row g-3">
-                                <div class="col-md-4">
-                                    <label class="form-label">Тип вопроса</label>
-                                    <select class="form-select question-type-select" name="question_type">
-                                        {% for question_type in question_types %}
-                                            <option value="{{ question_type.value }}" {% if question_type.value == question.type.value %}selected{% endif %}>{{ question_type|enum_label }}</option>
-                                        {% endfor %}
-                                    </select>
-                                </div>
-                                <div class="col-md-2">
-                                    <label class="form-label">Баллы</label>
-                                    <input class="form-control" type="number" step="0.5" min="0" name="points" value="{{ question.points }}" required>
-                                </div>
-                                <div class="col-12">
-                                    <label class="form-label">Текст вопроса</label>
-                                    <textarea class="form-control" rows="2" name="text" required>{{ question.text }}</textarea>
-                                </div>
-                                <div class="col-md-6 question-field question-field-media">
-                                    <label class="form-label">Ссылка на изображение/аудио/видео/файл</label>
-                                    <input class="form-control" type="url" name="media_url" value="{{ question.media_url }}">
-                                    {% if question.media_url %}
-                                        <div class="small text-secondary text-break mt-1">Сейчас: {{ question.media_url }}</div>
-                                    {% endif %}
-                                </div>
-                                <div class="col-md-6 question-field question-field-media">
-                                    <label class="form-label">Загрузить свой файл</label>
-                                    <input class="form-control" type="file" name="media_file" accept="image/*,audio/*,video/*,.pdf,.docx,.xlsx,.pptx,.txt,.csv">
-                                    <div class="small text-secondary mt-1">Если выбрать файл, он заменит ссылку выше.</div>
-                                </div>
-                                <div class="col-md-6 question-field question-field-code">
-                                    <label class="form-label">Язык кода</label>
-                                    <input class="form-control" type="text" name="code_language" value="{{ question.code_language }}" placeholder="python, javascript, sql">
-                                </div>
-                                <div class="col-12 question-field question-field-code">
-                                    <label class="form-label">Фрагмент кода</label>
-                                    <textarea class="form-control font-monospace" rows="4" name="code_snippet">{{ question.code_snippet }}</textarea>
-                                </div>
-                                <div class="col-12 question-field question-field-options">
-                                    <div class="d-flex justify-content-between align-items-center mb-2">
-                                        <label class="form-label mb-0 question-options-label">Варианты ответа</label>
-                                        <button class="btn btn-sm btn-outline-secondary js-add-option" type="button">Добавить вариант</button>
-                                    </div>
-                                    <div class="options-list">
-                                        {% for option in question.options %}
-                                            <div class="input-group mb-2 option-row">
-                                                <span class="input-group-text">{{ loop.index }}</span>
-                                                <input class="form-control" type="text" name="option_text" value="{{ option.text }}" required>
-                                                <input class="form-control match-input" type="text" name="match_text" value="{{ option.match_text }}" placeholder="Соответствие">
-                                                <input class="form-control order-input" type="number" min="1" name="order_index" value="{{ option.order_index or loop.index }}" placeholder="Порядок">
-                                                <span class="input-group-text correct-input-wrap">
-                                                    <input class="form-check-input mt-0 correct-flag" type="{% if question.type.value == 'single_choice' %}radio{% else %}checkbox{% endif %}" name="correct_option" value="{{ loop.index0 }}" {% if option.is_correct %}checked{% endif %}>
-                                                </span>
-                                            </div>
-                                        {% else %}
-                                            <div class="text-secondary small">Пока нет вариантов ответа.</div>
-                                        {% endfor %}
-                                    </div>
-                                    <div class="small text-secondary">Для текстовых и развернутых вопросов все введенные варианты считаются допустимыми правильными ответами.</div>
-                                </div>
-                                <div class="col-12 d-flex gap-2">
-                                    <button class="btn btn-dark" type="submit">Сохранить вопрос</button>
-                                    <button class="btn btn-outline-danger" type="submit" formaction="/tests/{{ test.id }}/questions/{{ question.id }}/delete" formmethod="post">Удалить</button>
+                    <div class="card shadow-sm border-0 mb-3">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <div>
+                                    <div class="fw-semibold math-content">{{ loop.index }}. {{ question.text }}</div>
+                                    <div class="small text-secondary">{{ question.type|enum_label }} · {{ question.points }} балл(ов)</div>
                                 </div>
                             </div>
-                        </form>
+
+                            {% if question.media_url %}
+                                <div class="mb-3">
+                                    {% if question.type.value == "image" %}
+                                        <img class="img-fluid rounded border" src="{{ question.media_url }}" alt="Материал к вопросу">
+                                    {% elif question.type.value == "audio" %}
+                                        <audio class="w-100" controls src="{{ question.media_url }}"></audio>
+                                    {% elif question.type.value == "video" %}
+                                        <video class="w-100 rounded border" controls src="{{ question.media_url }}"></video>
+                                    {% elif question.type.value == "file" %}
+                                        <a class="btn btn-outline-dark" href="{{ question.media_url }}" target="_blank" rel="noopener">Открыть файл</a>
+                                    {% endif %}
+                                </div>
+                            {% endif %}
+
+                            {% if question.code_snippet %}
+                                <div class="mb-3">
+                                    <div class="small text-secondary mb-1">{{ question.code_language or "код" }}</div>
+                                    <pre class="bg-dark text-light rounded p-3 mb-0"><code>{{ question.code_snippet }}</code></pre>
+                                </div>
+                            {% endif %}
+
+                            {% if question.type.value in ["single_choice", "multiple_choice", "image", "audio", "video", "file"] %}
+                                <div class="d-grid gap-2">
+                                    {% for option in question.options %}
+                                        <div class="option-tile">
+                                            <input class="form-check-input" type="{% if question.type.value == 'multiple_choice' %}checkbox{% else %}radio{% endif %}" disabled {% if option.is_correct %}checked{% endif %}>
+                                            <span class="math-content">{{ option.text }}</span>
+                                        </div>
+                                    {% else %}
+                                        <div class="text-secondary">Варианты ответа не заданы.</div>
+                                    {% endfor %}
+                                </div>
+                            {% elif question.type.value == "matching" %}
+                                <div class="d-grid gap-2">
+                                    {% for option in question.options %}
+                                        <div class="row g-2 align-items-center">
+                                            <div class="col-md-6 fw-semibold math-content">{{ option.text }}</div>
+                                            <div class="col-md-6 math-content">{{ option.match_text or "Соответствие не задано" }}</div>
+                                        </div>
+                                    {% else %}
+                                        <div class="text-secondary">Пары соответствия не заданы.</div>
+                                    {% endfor %}
+                                </div>
+                            {% elif question.type.value == "ordering" %}
+                                <ol class="mb-0">
+                                    {% for option in question.options %}
+                                        <li class="math-content">
+                                            {% if option.order_index %}{{ option.order_index }}. {% endif %}{{ option.text }}
+                                        </li>
+                                    {% else %}
+                                        <li class="text-secondary">Элементы порядка не заданы.</li>
+                                    {% endfor %}
+                                </ol>
+                            {% else %}
+                                <div class="border rounded bg-light p-3 text-secondary">Поле для развернутого ответа</div>
+                            {% endif %}
+                        </div>
                     </div>
                 {% else %}
-                    <div class="alert alert-light border">В тесте пока нет вопросов.</div>
+                    <div class="alert alert-light border mb-0">В тесте пока нет вопросов.</div>
                 {% endfor %}
             </div>
         </div>
+    </div>
+</div>
 
-        <div class="card shadow-sm border-0 mt-4">
-            <div class="card-body">
-                <h2 class="h5 mb-3">Добавить вопрос</h2>
+<div class="editor-layout">
+    <div class="editor-primary">
+        {% include "examiner/_test_form.html" %}
+
+        <div class="editor-panel questions-panel" id="questions-list">
+            <h2 class="questions-panel-title">Вопросы</h2>
+
+            <div class="questions-stack">
+                {% for question in test.questions %}
+                    <article class="question-display-card" id="question-{{ question.id }}">
+                        <div class="question-display-main">
+                            <div class="question-grip"><i data-lucide="grip-vertical"></i></div>
+                            <div class="question-display-content">
+                                <div class="question-display-head">
+                                    <span class="question-number">{{ loop.index }}</span>
+                                    <span class="question-type-pill">{{ question.type|enum_label }}</span>
+                                    <span class="question-points">{{ question.points }} балл{% if question.points != 1 %}а{% endif %}</span>
+                                    <div class="question-actions">
+                                        <button class="icon-button" type="button" data-bs-toggle="collapse" data-bs-target="#question-edit-{{ question.id }}" aria-label="Редактировать вопрос">
+                                            <i data-lucide="pencil"></i>
+                                        </button>
+                                        <button class="icon-button" type="button" aria-label="Дублировать вопрос">
+                                            <i data-lucide="copy"></i>
+                                        </button>
+                                        <form action="/tests/{{ test.id }}/questions/{{ question.id }}/delete" method="post">
+                                            <button class="icon-button" type="submit" aria-label="Удалить вопрос">
+                                                <i data-lucide="trash-2"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+
+                                <div class="question-display-text math-content">{{ question.text }}</div>
+
+                                {% if question.type.value in ["single_choice", "multiple_choice", "image", "audio", "video", "file"] %}
+                                    <div class="answer-preview-list">
+                                        {% for option in question.options %}
+                                            <div class="answer-preview-row {% if option.is_correct %}is-correct{% endif %}">
+                                                <span class="answer-check">
+                                                    {% if question.type.value == "multiple_choice" %}
+                                                        <i data-lucide="{% if option.is_correct %}check-square-2{% else %}square{% endif %}"></i>
+                                                    {% else %}
+                                                        <i data-lucide="{% if option.is_correct %}circle-dot{% else %}circle{% endif %}"></i>
+                                                    {% endif %}
+                                                </span>
+                                                <span class="math-content">{{ option.text }}</span>
+                                                {% if option.is_correct %}
+                                                    <i class="answer-correct-icon" data-lucide="check"></i>
+                                                {% endif %}
+                                            </div>
+                                        {% else %}
+                                            <div class="answer-preview-empty">Варианты ответа не заданы.</div>
+                                        {% endfor %}
+                                    </div>
+                                {% elif question.type.value == "matching" %}
+                                    <div class="matching-preview-list">
+                                        {% for option in question.options %}
+                                            <div class="matching-preview-row">
+                                                <span class="matching-left"><b>{{ loop.index }}</b>{{ option.text }}</span>
+                                                <i data-lucide="link-2"></i>
+                                                <span class="matching-right">{{ option.match_text or "Соответствие не задано" }}</span>
+                                            </div>
+                                        {% else %}
+                                            <div class="answer-preview-empty">Пары соответствия не заданы.</div>
+                                        {% endfor %}
+                                    </div>
+                                {% elif question.type.value == "ordering" %}
+                                    <div class="answer-preview-list">
+                                        {% for option in question.options %}
+                                            <div class="answer-preview-row {% if option.is_correct %}is-correct{% endif %}">
+                                                <span class="answer-order">{{ option.order_index or loop.index }}</span>
+                                                <span class="math-content">{{ option.text }}</span>
+                                            </div>
+                                        {% else %}
+                                            <div class="answer-preview-empty">Элементы порядка не заданы.</div>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    <div class="answer-preview-empty">Ответ вводится тестируемым вручную.</div>
+                                {% endif %}
+
+                                <div class="collapse question-edit-collapse" id="question-edit-{{ question.id }}">
+                                    <form action="/tests/{{ test.id }}/questions/{{ question.id }}" method="post" enctype="multipart/form-data" class="question-editor">
+                                        <div class="row g-3">
+                                            <div class="col-md-4">
+                                                <label class="form-label">Тип вопроса</label>
+                                                <select class="form-select question-type-select" name="question_type">
+                                                    {% for question_type in question_types %}
+                                                        <option value="{{ question_type.value }}" {% if question_type.value == question.type.value %}selected{% endif %}>{{ question_type|enum_label }}</option>
+                                                    {% endfor %}
+                                                </select>
+                                            </div>
+                                            <div class="col-md-2">
+                                                <label class="form-label">Баллы</label>
+                                                <input class="form-control" type="number" step="0.5" min="0" name="points" value="{{ question.points }}" required>
+                                            </div>
+                                            <div class="col-12">
+                                                <label class="form-label">Текст вопроса</label>
+                                                <textarea class="form-control" rows="2" name="text" required>{{ question.text }}</textarea>
+                                            </div>
+                                            <div class="col-md-6 question-field question-field-media">
+                                                <label class="form-label">Ссылка на изображение/аудио/видео/файл</label>
+                                                <input class="form-control" type="url" name="media_url" value="{{ question.media_url }}">
+                                                {% if question.media_url %}
+                                                    <div class="small text-secondary text-break mt-1">Сейчас: {{ question.media_url }}</div>
+                                                {% endif %}
+                                            </div>
+                                            <div class="col-md-6 question-field question-field-media">
+                                                <label class="form-label">Загрузить свой файл</label>
+                                                <input class="form-control" type="file" name="media_file" accept="image/*,audio/*,video/*,.pdf,.docx,.xlsx,.pptx,.txt,.csv">
+                                                <div class="small text-secondary mt-1">Если выбрать файл, он заменит ссылку выше.</div>
+                                            </div>
+                                            <div class="col-md-6 question-field question-field-code">
+                                                <label class="form-label">Язык кода</label>
+                                                <input class="form-control" type="text" name="code_language" value="{{ question.code_language }}" placeholder="python, javascript, sql">
+                                            </div>
+                                            <div class="col-12 question-field question-field-code">
+                                                <label class="form-label">Фрагмент кода</label>
+                                                <textarea class="form-control font-monospace" rows="4" name="code_snippet">{{ question.code_snippet }}</textarea>
+                                            </div>
+                                            <div class="col-12 question-field question-field-options">
+                                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                                    <label class="form-label mb-0 question-options-label">Варианты ответа</label>
+                                                    <button class="btn btn-sm btn-outline-secondary js-add-option" type="button">Добавить вариант</button>
+                                                </div>
+                                                <div class="options-list">
+                                                    {% for option in question.options %}
+                                                        <div class="input-group mb-2 option-row">
+                                                            <span class="input-group-text">{{ loop.index }}</span>
+                                                            <input class="form-control" type="text" name="option_text" value="{{ option.text }}" required>
+                                                            <input class="form-control match-input" type="text" name="match_text" value="{{ option.match_text }}" placeholder="Соответствие">
+                                                            <input class="form-control order-input" type="number" min="1" name="order_index" value="{{ option.order_index or loop.index }}" placeholder="Порядок">
+                                                            <span class="input-group-text correct-input-wrap">
+                                                                <input class="form-check-input mt-0 correct-flag" type="{% if question.type.value == 'single_choice' %}radio{% else %}checkbox{% endif %}" name="correct_option" value="{{ loop.index0 }}" {% if option.is_correct %}checked{% endif %}>
+                                                            </span>
+                                                        </div>
+                                                    {% else %}
+                                                        <div class="text-secondary small">Пока нет вариантов ответа.</div>
+                                                    {% endfor %}
+                                                </div>
+                                                <div class="small text-secondary">Для текстовых и развернутых вопросов все введенные варианты считаются допустимыми правильными ответами.</div>
+                                            </div>
+                                            <div class="col-12 d-flex gap-2">
+                                                <button class="btn btn-dark" type="submit">Сохранить вопрос</button>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </article>
+                {% else %}
+                    <div class="empty-panel">В тесте пока нет вопросов.</div>
+                {% endfor %}
+            </div>
+
+            <button class="add-question-strip" type="button" data-bs-toggle="collapse" data-bs-target="#add-question">
+                <i data-lucide="plus"></i>
+                <span>Добавить вопрос</span>
+            </button>
+
+            <div class="collapse add-question-collapse" id="add-question">
                 <form action="/tests/{{ test.id }}/questions" method="post" enctype="multipart/form-data" class="question-editor">
                     <div class="row g-3">
                         <div class="col-md-4">
@@ -162,10 +400,59 @@
         </div>
     </div>
 
-    <div class="col-xl-4">
-        <div class="card shadow-sm border-0">
-            <div class="card-body">
-                <h2 class="h5 mb-3">Приватные ссылки</h2>
+    <aside class="editor-aside">
+        <section class="editor-panel summary-panel">
+            <h2>Кратко о тесте</h2>
+            <div class="summary-list">
+                <div><span><i data-lucide="clock-3"></i>Создан</span><strong>{{ test.created_at|datetime_label }}</strong></div>
+                <div><span><i data-lucide="refresh-cw"></i>Изменён</span><strong>{{ test.updated_at|datetime_label }}</strong></div>
+                <div><span><i data-lucide="user"></i>Автор</span><strong>{{ current_user.full_name or current_user.username }}</strong></div>
+                <div><span><i data-lucide="clipboard-list"></i>Вопросов в тесте</span><strong>{{ test.questions|length }}</strong></div>
+                <div><span><i data-lucide="list-checks"></i>Типы вопросов</span><strong>{{ [type_counts.single_choice, type_counts.multiple_choice, type_counts.text_answer, type_counts.audio, type_counts.video, type_counts.other]|select|list|length }}</strong></div>
+            </div>
+
+            <hr>
+
+            <h2>Приватная ссылка</h2>
+            {% if active_link %}
+                <div class="copy-link-box">
+                    <i data-lucide="lock-keyhole"></i>
+                    <input type="text" value="{{ request.base_url }}tests/link/{{ active_link.token }}" readonly>
+                    <button type="button" aria-label="Скопировать" data-copy-link><i data-lucide="copy"></i></button>
+                </div>
+                <p class="summary-hint">Только пользователи с ссылкой могут пройти тест.</p>
+            {% else %}
+                <p class="summary-hint">Создайте приватную ссылку ниже, если тест должен открываться по прямому доступу.</p>
+            {% endif %}
+
+            <hr>
+
+            <h2>Структура теста</h2>
+            <div class="structure-progress">
+                <div>
+                    <span>Заполненность</span>
+                    <strong>{{ test.questions|length }} вопросов</strong>
+                </div>
+                <div class="progress">
+                    <div class="progress-bar" style="width: {% if test.questions|length %}100{% else %}0{% endif %}%"></div>
+                </div>
+            </div>
+            <div class="structure-list">
+                <div><span><i data-lucide="circle-dot"></i>Один ответ</span><strong>{{ type_counts.single_choice }}</strong></div>
+                <div><span><i data-lucide="list-checks"></i>Несколько ответов</span><strong>{{ type_counts.multiple_choice }}</strong></div>
+                <div><span><i data-lucide="align-left"></i>Текст</span><strong>{{ type_counts.text_answer }}</strong></div>
+                <div><span><i data-lucide="volume-2"></i>Аудио</span><strong>{{ type_counts.audio }}</strong></div>
+                <div><span><i data-lucide="video"></i>Видео</span><strong>{{ type_counts.video }}</strong></div>
+            </div>
+            <a class="btn btn-outline-primary w-100 summary-question-link" href="#questions-list">
+                <span>Просмотреть вопросы</span>
+                <i data-lucide="arrow-right"></i>
+            </a>
+        </section>
+
+        <section class="editor-panel links-panel">
+            <h2>Приватные ссылки</h2>
+            <div class="card-body p-0">
                 <form action="/tests/{{ test.id }}/links" method="post" class="d-grid gap-3">
                     <div>
                         <label class="form-label">Срок действия</label>
@@ -195,13 +482,13 @@
                     <button class="btn btn-dark" type="submit">Создать ссылку</button>
                 </form>
             </div>
-        </div>
+        </section>
 
-        <div class="card shadow-sm border-0 mt-4">
-            <div class="card-body">
-                <h2 class="h5 mb-3">Активные ссылки</h2>
+        <section class="editor-panel links-panel">
+            <div class="card-body p-0">
+                <h2>Активные ссылки</h2>
                 {% for link in test_links %}
-                    <div class="border rounded p-3 mb-3">
+                    <div class="active-link-card">
                         <div class="small text-secondary mb-1">Токен</div>
                         <div class="fw-semibold text-break mb-2">{{ link.token }}</div>
                         <div class="small text-break mb-2">{{ request.base_url }}tests/link/{{ link.token }}</div>
@@ -212,8 +499,8 @@
                     <div class="text-secondary">Ссылок пока нет.</div>
                 {% endfor %}
             </div>
-        </div>
-    </div>
+        </section>
+    </aside>
 </div>
 
 <script src="/static/js/test-editor.js"></script>

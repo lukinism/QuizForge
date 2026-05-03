@@ -1,39 +1,126 @@
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <div>
-        <h1 class="h3 mb-1">Группы</h1>
-        <p class="text-secondary mb-0">Список групп, созданных в вашей зоне доступа.</p>
-    </div>
-    <a class="btn btn-dark" href="/groups/create">Создать группу</a>
-</div>
+{% set groups_stats = namespace(total_members=0, active_groups=0) %}
+{% for group in groups %}
+    {% set groups_stats.total_members = groups_stats.total_members + (group.members|length) %}
+    {% if assignment_counts_by_group.get(group.id|string, 0) > 0 %}
+        {% set groups_stats.active_groups = groups_stats.active_groups + 1 %}
+    {% endif %}
+{% endfor %}
 
-<div class="card shadow-sm border-0">
-    <div class="card-body">
-        <div class="table-responsive">
-            <table class="table align-middle">
+<div class="groups-page" data-groups-page>
+    <header class="groups-header">
+        <div>
+            <h1>Группы</h1>
+            <p>Список групп, созданных в вашей зоне доступа.</p>
+        </div>
+        <a class="groups-create-button" href="/groups/create">
+            <i data-lucide="plus-circle"></i>
+            Создать группу
+        </a>
+    </header>
+
+    <section class="groups-metrics" aria-label="Сводка по группам">
+        <article class="groups-metric-card">
+            <span class="groups-metric-icon groups-metric-blue"><i data-lucide="users"></i></span>
+            <div>
+                <span>Всего групп</span>
+                <strong>{{ groups|length }}</strong>
+            </div>
+        </article>
+        <article class="groups-metric-card">
+            <span class="groups-metric-icon groups-metric-green"><i data-lucide="user"></i></span>
+            <div>
+                <span>Всего участников</span>
+                <strong>{{ groups_stats.total_members }}</strong>
+            </div>
+        </article>
+        <article class="groups-metric-card">
+            <span class="groups-metric-icon groups-metric-purple"><i data-lucide="shield"></i></span>
+            <div>
+                <span>Активные группы</span>
+                <strong>{{ groups_stats.active_groups }}</strong>
+            </div>
+        </article>
+        <article class="groups-metric-card">
+            <span class="groups-metric-icon groups-metric-orange"><i data-lucide="file-text"></i></span>
+            <div>
+                <span>Назначено тестов</span>
+                <strong>{{ assigned_tests_count|default(0) }}</strong>
+            </div>
+        </article>
+    </section>
+
+    <section class="groups-table-panel">
+        <div class="groups-toolbar">
+            <label class="groups-search">
+                <i data-lucide="search"></i>
+                <input type="search" placeholder="Поиск по группам..." data-groups-search>
+            </label>
+            <label class="groups-filter">
+                <i data-lucide="filter"></i>
+                <select data-groups-filter>
+                    <option value="all">Все группы</option>
+                    <option value="active">Активные группы</option>
+                    <option value="empty">Без назначений</option>
+                </select>
+                <i data-lucide="chevron-down"></i>
+            </label>
+        </div>
+
+        <div class="groups-table-wrap">
+            <table class="groups-table">
                 <thead>
-                    <tr>
-                        <th>Название группы</th>
-                        <th>Кол-во участников</th>
-                        <th>О группе</th>
-                        <th>Редактировать группу</th>
-                    </tr>
+                <tr>
+                    <th>Название группы <i data-lucide="arrow-up-down"></i></th>
+                    <th>Описание</th>
+                    <th>Кол-во участников <i data-lucide="arrow-up-down"></i></th>
+                    <th>Действия</th>
+                </tr>
                 </thead>
-                <tbody>
+                <tbody data-groups-body>
                 {% for group in groups %}
-                    <tr>
+                    {% set assignments_count = assignment_counts_by_group.get(group.id|string, 0) %}
+                    <tr data-group-row data-title="{{ group.title|lower }}" data-description="{{ (group.description or '')|lower }}" data-active="{% if assignments_count > 0 %}true{% else %}false{% endif %}">
                         <td>
-                            <div class="fw-semibold">{{ group.title }}</div>
-                            <div class="small text-secondary">{{ group.description or "Без описания" }}</div>
+                            <strong>{{ group.title }}</strong>
+                            <span>{{ group.description or "Без описания" }}</span>
                         </td>
+                        <td>{{ group.description or "Без описания" }}</td>
                         <td>{{ group.members|length }}</td>
-                        <td><a class="btn btn-sm btn-outline-dark" href="/groups/{{ group.id }}">О группе</a></td>
-                        <td><a class="btn btn-sm btn-outline-secondary" href="/groups/{{ group.id }}/edit">Редактировать</a></td>
+                        <td>
+                            <div class="groups-row-actions">
+                                <a class="groups-row-button" href="/groups/{{ group.id }}">
+                                    <i data-lucide="eye"></i>
+                                    О группе
+                                </a>
+                                <a class="groups-row-button" href="/groups/{{ group.id }}/edit">
+                                    <i data-lucide="pencil"></i>
+                                    Редактировать
+                                </a>
+                            </div>
+                        </td>
                     </tr>
                 {% else %}
-                    <tr><td colspan="4" class="text-secondary">Группы пока не созданы.</td></tr>
+                    <tr>
+                        <td colspan="4" class="groups-empty">Группы пока не созданы.</td>
+                    </tr>
                 {% endfor %}
                 </tbody>
             </table>
         </div>
-    </div>
+
+        <div class="groups-footer">
+            <span>Показано <span data-groups-visible>{{ groups|length }}</span> из {{ groups|length }} группы</span>
+            <div class="groups-pagination">
+                <button type="button" disabled><i data-lucide="chevron-left"></i></button>
+                <button class="is-current" type="button">1</button>
+                <button type="button" disabled><i data-lucide="chevron-right"></i></button>
+                <label>
+                    <select>
+                        <option>10 на странице</option>
+                    </select>
+                    <i data-lucide="chevron-down"></i>
+                </label>
+            </div>
+        </div>
+    </section>
 </div>

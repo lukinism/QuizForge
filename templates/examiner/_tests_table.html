@@ -1,30 +1,119 @@
-<div class="card shadow-sm border-0">
-    <div class="card-body">
-        <div class="table-responsive">
-            <table class="table align-middle">
-                <thead><tr><th>Название</th><th>Статус</th><th>Видимость</th><th>Вопросы</th><th>Действия</th></tr></thead>
-                <tbody>
-                {% for test in tests %}
-                    <tr>
-                        <td>{{ test.title }}<div class="small text-secondary">{{ test.description or "Без описания" }}</div></td>
-                        <td><span class="badge text-bg-dark">{{ test.status|enum_label }}</span></td>
-                        <td>{{ test.visibility|enum_label }}</td>
-                        <td>{{ test.questions|length }}</td>
-                        <td class="d-flex gap-2">
-                            <a class="btn btn-sm btn-outline-dark" href="/tests/{{ test.id }}/edit">Открыть</a>
-                            <form action="/reports/test/{{ test.id }}" method="post">
-                                <button class="btn btn-sm btn-outline-secondary" type="submit">PDF</button>
-                            </form>
-                            <form action="/tests/{{ test.id }}/delete" method="post">
-                                <button class="btn btn-sm btn-outline-danger" type="submit">Удалить</button>
-                            </form>
-                        </td>
-                    </tr>
-                {% else %}
-                    <tr><td colspan="5" class="text-secondary">Тестов пока нет.</td></tr>
-                {% endfor %}
-                </tbody>
-            </table>
+{% set test_stats = namespace(published=0, drafts=0, questions=0) %}
+{% for test in tests %}
+    {% if test.status.value == "published" %}
+        {% set test_stats.published = test_stats.published + 1 %}
+    {% elif test.status.value == "draft" %}
+        {% set test_stats.drafts = test_stats.drafts + 1 %}
+    {% endif %}
+    {% set test_stats.questions = test_stats.questions + (test.questions|length) %}
+{% endfor %}
+
+<section class="tests-page">
+    <header class="tests-header">
+        <div>
+            <h1>{{ tests_title or "Мои тесты" }}</h1>
+            <p>{{ tests_subtitle or "Создание, публикация и ссылки для приватного доступа." }}</p>
         </div>
+        <div class="tests-actions">
+            <form action="/tests/import" method="post" enctype="multipart/form-data" class="tests-import-form">
+                <label class="tests-file-button">
+                    <i data-lucide="upload"></i>
+                    <span>Выберите файл</span>
+                    <input type="file" name="json_file" accept="application/json,.json" required>
+                </label>
+                <button class="tests-import-button" type="submit">
+                    <i data-lucide="cloud-upload"></i>
+                    <span>Импорт JSON</span>
+                </button>
+            </form>
+            <a class="tests-create-button" href="/tests/create">
+                <i data-lucide="plus-circle"></i>
+                <span>Создать тест</span>
+            </a>
+        </div>
+    </header>
+
+    {% if error %}
+        <div class="alert alert-danger">{{ error }}</div>
+    {% endif %}
+
+    <div class="tests-metrics">
+        <article class="tests-metric-card">
+            <div class="tests-metric-icon tests-metric-blue"><i data-lucide="clipboard-list"></i></div>
+            <div>
+                <span>Всего тестов</span>
+                <strong>{{ tests|length }}</strong>
+            </div>
+        </article>
+        <article class="tests-metric-card">
+            <div class="tests-metric-icon tests-metric-green"><i data-lucide="globe-2"></i></div>
+            <div>
+                <span>Опубликовано</span>
+                <strong>{{ test_stats.published }}</strong>
+            </div>
+        </article>
+        <article class="tests-metric-card">
+            <div class="tests-metric-icon tests-metric-orange"><i data-lucide="file-text"></i></div>
+            <div>
+                <span>Черновики</span>
+                <strong>{{ test_stats.drafts }}</strong>
+            </div>
+        </article>
+        <article class="tests-metric-card">
+            <div class="tests-metric-icon tests-metric-purple"><i data-lucide="circle-help"></i></div>
+            <div>
+                <span>Всего вопросов</span>
+                <strong>{{ test_stats.questions }}</strong>
+            </div>
+        </article>
     </div>
-</div>
+
+    <section class="tests-list-panel">
+        <div class="tests-list-head">
+            <div>Название</div>
+            <div>Статус</div>
+            <div>Видимость</div>
+            <div>Вопросы</div>
+            <div>Действия</div>
+        </div>
+
+        <div class="tests-list">
+            {% for test in tests %}
+                <article class="tests-row">
+                    <div class="tests-title-cell">
+                        <h2>{{ test.title }}</h2>
+                        <p>{{ test.description or "Без описания" }}</p>
+                    </div>
+                    <div>
+                        <span class="tests-status-pill {% if test.status.value == 'published' %}is-published{% elif test.status.value == 'draft' %}is-draft{% else %}is-archived{% endif %}">
+                            <span></span>
+                            {{ test.status|enum_label }}
+                        </span>
+                    </div>
+                    <div class="tests-muted-cell">{{ test.visibility|enum_label }}</div>
+                    <div class="tests-count-cell">{{ test.questions|length }}</div>
+                    <div class="tests-row-actions">
+                        <a class="tests-row-button" href="/tests/{{ test.id }}/edit">
+                            <i data-lucide="eye"></i>
+                            <span>Открыть</span>
+                        </a>
+                        <form action="/reports/test/{{ test.id }}" method="post">
+                            <button class="tests-row-button" type="submit">
+                                <i data-lucide="file-down"></i>
+                                <span>PDF</span>
+                            </button>
+                        </form>
+                        <form action="/tests/{{ test.id }}/delete" method="post" onsubmit="return confirm('Точно удалить этот тест?');">
+                            <button class="tests-row-button tests-row-danger" type="submit">
+                                <i data-lucide="trash-2"></i>
+                                <span>Удалить</span>
+                            </button>
+                        </form>
+                    </div>
+                </article>
+            {% else %}
+                <div class="tests-empty">Тестов пока нет.</div>
+            {% endfor %}
+        </div>
+    </section>
+</section>

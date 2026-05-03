@@ -97,3 +97,36 @@ document.querySelectorAll(".question-editor").forEach((form) => {
     }
     syncInputTypes();
 });
+
+document.querySelectorAll("[data-test-preview-modal]").forEach((modal) => {
+    modal.addEventListener("shown.bs.modal", () => {
+        if (window.renderMath) {
+            window.renderMath(modal);
+        }
+    });
+});
+
+document.querySelectorAll("[data-copy-link]").forEach((button) => {
+    button.addEventListener("click", async () => {
+        const input = button.closest(".copy-link-box")?.querySelector("input");
+        if (!input) {
+            return;
+        }
+        input.select();
+        try {
+            await navigator.clipboard.writeText(input.value);
+            button.innerHTML = '<i data-lucide="check"></i>';
+            if (window.lucide) {
+                window.lucide.createIcons({ attrs: { "stroke-width": 1.9 } });
+            }
+            window.setTimeout(() => {
+                button.innerHTML = '<i data-lucide="copy"></i>';
+                if (window.lucide) {
+                    window.lucide.createIcons({ attrs: { "stroke-width": 1.9 } });
+                }
+            }, 1200);
+        } catch (_) {
+            document.execCommand("copy");
+        }
+    });
+});

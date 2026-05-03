@@ -1,22 +1,40 @@
-<div class="card shadow-sm border-0">
-    <div class="card-body">
-        <form action="{{ '/tests/create' if not test else '/tests/' ~ test.id ~ '/edit' }}" method="post" class="row g-3">
-            <div class="col-12">
+<form
+    id="test-settings"
+    action="{{ '/tests/create' if not test else '/tests/' ~ test.id ~ '/edit' }}"
+    method="post"
+    class="editor-settings-form"
+>
+    <section class="editor-panel">
+        <h2 class="editor-panel-title">
+            <i class="panel-title-icon" data-lucide="file-text"></i>
+            <span>1. Основное</span>
+        </h2>
+        <div class="editor-grid editor-grid-basic">
+            <div>
                 <label class="form-label">Название</label>
                 <input class="form-control" type="text" name="title" value="{{ test.title if test else '' }}" required>
             </div>
-            <div class="col-12">
+            <div>
                 <label class="form-label">Описание</label>
                 <textarea class="form-control" rows="3" name="description">{{ test.description if test else '' }}</textarea>
             </div>
-            <div class="col-md-3">
+        </div>
+    </section>
+
+    <section class="editor-panel">
+        <h2 class="editor-panel-title">
+            <i class="panel-title-icon" data-lucide="sliders-horizontal"></i>
+            <span>2. Параметры прохождения</span>
+        </h2>
+        <div class="editor-grid editor-grid-params">
+            <div>
                 <label class="form-label">Видимость</label>
                 <select class="form-select" name="visibility">
                     <option value="private" {% if not test or test.visibility.value == 'private' %}selected{% endif %}>{{ "private"|enum_label }}</option>
                     <option value="public" {% if test and test.visibility.value == 'public' %}selected{% endif %}>{{ "public"|enum_label }}</option>
                 </select>
             </div>
-            <div class="col-md-3">
+            <div>
                 <label class="form-label">Статус</label>
                 <select class="form-select" name="status">
                     <option value="draft" {% if not test or test.status.value == 'draft' %}selected{% endif %}>{{ "draft"|enum_label }}</option>
@@ -24,44 +42,77 @@
                     <option value="archived" {% if test and test.status.value == 'archived' %}selected{% endif %}>{{ "archived"|enum_label }}</option>
                 </select>
             </div>
-            <div class="col-md-2">
+            <div>
                 <label class="form-label">Лимит, мин</label>
                 <input class="form-control" type="number" min="1" max="240" name="time_limit_minutes" value="{{ test.settings.time_limit_minutes if test and test.settings.time_limit_minutes is not none else '' }}">
             </div>
-            <div class="col-md-2">
+            <div>
                 <label class="form-label">Попыток</label>
                 <input class="form-control" type="number" min="1" max="50" name="max_attempts" value="{{ test.settings.max_attempts if test else 1 }}">
             </div>
-            <div class="col-md-2">
+            <div>
                 <label class="form-label">Проходной %</label>
                 <input class="form-control" type="number" min="0" max="100" name="passing_score" value="{{ test.settings.passing_score if test else 60 }}">
             </div>
-            <div class="col-md-4">
+            <div class="editor-grid-span-2">
                 <label class="form-label">Формат прохождения</label>
                 <select class="form-select" name="flow_mode">
                     <option value="all_questions" {% if not test or test.settings.flow_mode.value == 'all_questions' %}selected{% endif %}>{{ "all_questions"|enum_label }}</option>
                     <option value="one_by_one" {% if test and test.settings.flow_mode.value == 'one_by_one' %}selected{% endif %}>{{ "one_by_one"|enum_label }}</option>
                 </select>
             </div>
-            <div class="col-12">
-                <div class="row g-2">
-                    <div class="col-md-3"><div class="form-check"><input class="form-check-input" type="checkbox" name="show_result" {% if not test or test.settings.show_result %}checked{% endif %}><label class="form-check-label">Показывать результат</label></div></div>
-                    <div class="col-md-3"><div class="form-check"><input class="form-check-input" type="checkbox" name="show_correct_answers" {% if test and test.settings.show_correct_answers %}checked{% endif %}><label class="form-check-label">Показывать верные ответы</label></div></div>
-                    <div class="col-md-3"><div class="form-check"><input class="form-check-input" type="checkbox" name="shuffle_questions" {% if test and test.settings.shuffle_questions %}checked{% endif %}><label class="form-check-label">Перемешивать вопросы</label></div></div>
-                    <div class="col-md-3"><div class="form-check"><input class="form-check-input" type="checkbox" name="shuffle_answers" {% if test and test.settings.shuffle_answers %}checked{% endif %}><label class="form-check-label">Перемешивать ответы</label></div></div>
-                    <div class="col-md-3"><div class="form-check"><input class="form-check-input" type="checkbox" name="allow_question_skip" {% if not test or test.settings.allow_question_skip %}checked{% endif %}><label class="form-check-label">Разрешить пропускать вопросы</label></div></div>
-                </div>
-            </div>
-            <div class="col-12">
-                <div class="form-check mb-2">
-                    <input class="form-check-input" type="checkbox" name="instruction_enabled" id="instruction-enabled" {% if test and test.settings.instruction_enabled %}checked{% endif %}>
-                    <label class="form-check-label" for="instruction-enabled">Показывать инструкцию перед прохождением</label>
-                </div>
-                <textarea class="form-control" rows="4" name="instruction_text" placeholder="Текст инструкции для тестируемого">{{ test.settings.instruction_text if test else '' }}</textarea>
-            </div>
-            <div class="col-12">
-                <button class="btn btn-dark" type="submit">{% if test %}Сохранить изменения{% else %}Создать тест{% endif %}</button>
-            </div>
-        </form>
-    </div>
-</div>
+        </div>
+    </section>
+
+    <section class="editor-panel">
+        <h2 class="editor-panel-title">
+            <i class="panel-title-icon" data-lucide="toggle-left"></i>
+            <span>3. Дополнительные опции</span>
+        </h2>
+        <div class="editor-options-grid">
+            <label class="modern-switch">
+                <input type="checkbox" name="show_result" {% if not test or test.settings.show_result %}checked{% endif %}>
+                <span></span>
+                <b>Показывать результат</b>
+            </label>
+            <label class="modern-switch">
+                <input type="checkbox" name="show_correct_answers" {% if test and test.settings.show_correct_answers %}checked{% endif %}>
+                <span></span>
+                <b>Показывать верные ответы</b>
+            </label>
+            <label class="modern-switch">
+                <input type="checkbox" name="allow_question_skip" {% if not test or test.settings.allow_question_skip %}checked{% endif %}>
+                <span></span>
+                <b>Разрешить пропускать вопросы</b>
+            </label>
+            <label class="modern-switch">
+                <input type="checkbox" name="shuffle_questions" {% if test and test.settings.shuffle_questions %}checked{% endif %}>
+                <span></span>
+                <b>Перемешивать вопросы</b>
+            </label>
+            <label class="modern-switch">
+                <input type="checkbox" name="instruction_enabled" {% if test and test.settings.instruction_enabled %}checked{% endif %}>
+                <span></span>
+                <b>Показывать инструкцию перед прохождением</b>
+            </label>
+            <label class="modern-switch">
+                <input type="checkbox" name="shuffle_answers" {% if test and test.settings.shuffle_answers %}checked{% endif %}>
+                <span></span>
+                <b>Перемешивать ответы</b>
+            </label>
+        </div>
+    </section>
+
+    <section class="editor-panel">
+        <h2 class="editor-panel-title">
+            <i class="panel-title-icon" data-lucide="info"></i>
+            <span>4. Инструкция</span>
+        </h2>
+        <textarea class="form-control" rows="4" name="instruction_text" placeholder="Текст инструкции для тестируемого">{{ test.settings.instruction_text if test else '' }}</textarea>
+    </section>
+
+    <button class="btn btn-primary editor-save-button" type="submit">
+        <i data-lucide="save"></i>
+        <span>{% if test %}Сохранить изменения{% else %}Создать тест{% endif %}</span>
+    </button>
+</form>

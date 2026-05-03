@@ -52,7 +52,7 @@
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-start mb-3">
                     <div>
-                        <div class="fw-semibold">{{ loop.index }}. {{ answer.question_text }}</div>
+                        <div class="fw-semibold math-content">{{ loop.index }}. {{ answer.question_text }}</div>
                         <div class="small text-secondary">{{ answer.question_type|enum_label }} · {{ answer.max_points }} балл(ов)</div>
                     </div>
                     {% if test.settings.flow_mode.value == 'one_by_one' %}
@@ -86,7 +86,7 @@
                         {% for option in answer.options %}
                             <label class="option-tile">
                                 <input class="form-check-input" type="{% if answer.question_type.value == 'multiple_choice' %}checkbox{% else %}radio{% endif %}" name="question_{{ answer.question_id }}" value="{{ option.id }}" {% if option.id in answer.selected_options %}checked{% endif %}>
-                                <span>{{ option.text }}</span>
+                                <span class="math-content">{{ option.text }}</span>
                             </label>
                         {% endfor %}
                     </div>
@@ -94,7 +94,7 @@
                     <div class="d-grid gap-2">
                         {% for option in answer.options %}
                             <div class="row g-2 align-items-center">
-                                <div class="col-md-5 fw-semibold">{{ option.text }}</div>
+                                <div class="col-md-5 fw-semibold math-content">{{ option.text }}</div>
                                 <div class="col-md-7">
                                     <select class="form-select" name="match_{{ answer.question_id }}">
                                         <option value="{{ option.id }}::">Выберите соответствие</option>
@@ -111,7 +111,7 @@
                     <div class="d-grid gap-2">
                         {% for option in answer.options %}
                             <div class="row g-2 align-items-center">
-                                <div class="col-md-8">{{ option.text }}</div>
+                                <div class="col-md-8 math-content">{{ option.text }}</div>
                                 <div class="col-md-4">
                                     <select class="form-select" name="order_{{ answer.question_id }}">
                                         {% for index in range(1, answer.options|length + 1) %}

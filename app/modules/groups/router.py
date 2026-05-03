@@ -3,6 +3,7 @@ from fastapi.responses import RedirectResponse
 
 from app.core.dependencies import require_roles
 from app.core.templates import templates
+from app.modules.attempts.models import Attempt, AttemptStatus
 from app.modules.groups.service import (
     block_group_member,
     create_group,
@@ -76,6 +77,13 @@ async def _group_detail_context(request: Request, current_user: User, group) -> 
     tests = await list_manageable_tests(current_user)
     assignments = await TestAssignment.find(TestAssignment.group_id == group.id).sort("-created_at").to_list()
     assignment_tests = await Test.find({"_id": {"$in": [assignment.test_id for assignment in assignments]}}).to_list() if assignments else []
+    assignment_ids = [assignment.id for assignment in assignments]
+    completed_attempts_count = await Attempt.find(
+        {
+            "assignment_id": {"$in": assignment_ids},
+            "status": {"$in": [AttemptStatus.finished, AttemptStatus.expired, AttemptStatus.terminated]},
+        },
+    ).count() if assignment_ids else 0
     return {
         "current_user": current_user,
         "group": group,
@@ -86,6 +94,7 @@ async def _group_detail_context(request: Request, current_user: User, group) -> 
         "invite_links": await list_group_join_links(group, current_user),
         "join_events": await list_group_join_events(group, current_user),
         "assignments": assignments,
+        "completed_attempts_count": completed_attempts_count,
         "assignment_tests_by_id": {test.id: test for test in assignment_tests},
         "base_url": str(request.base_url),
     }
@@ -96,12 +105,19 @@ async def groups_page(
     request: Request,
     current_user: User = Depends(require_roles(UserRole.admin, UserRole.examiner)),
 ):
+    groups = await list_groups(current_user)
+    assignments = await TestAssignment.find({"group_id": {"$in": [group.id for group in groups]}}).to_list() if groups else []
+    assignment_counts_by_group = {str(group.id): 0 for group in groups}
+    for assignment in assignments:
+        assignment_counts_by_group[str(assignment.group_id)] = assignment_counts_by_group.get(str(assignment.group_id), 0) + 1
     return templates.TemplateResponse(
         request=request,
         name=_group_template(current_user),
         context={
             "current_user": current_user,
-            "groups": await list_groups(current_user),
+            "groups": groups,
+            "assignment_counts_by_group": assignment_counts_by_group,
+            "assigned_tests_count": len(assignments),
         },
     )
 

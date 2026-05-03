@@ -1,37 +1,87 @@
 {% extends "base.html" %}
 {% block title %}{% if group %}Редактировать группу{% else %}Создать группу{% endif %}{% endblock %}
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <div>
-        <h1 class="h3 mb-1">{% if group %}Редактировать группу{% else %}Создать группу{% endif %}</h1>
-        <p class="text-secondary mb-0">Название, описание и состав участников.</p>
-    </div>
-    <a class="btn btn-outline-dark" href="{% if group %}/groups/{{ group.id }}{% else %}/groups{% endif %}">Назад</a>
-</div>
+<div class="group-edit-page">
+    <header class="group-edit-header">
+        <div>
+            <h1>{% if group %}Редактировать группу{% else %}Создать группу{% endif %}</h1>
+            <p>Название, описание и состав участников.</p>
+        </div>
+        <a class="group-action-button" href="{% if group %}/groups/{{ group.id }}{% else %}/groups{% endif %}">
+            <i data-lucide="arrow-left"></i>
+            Назад
+        </a>
+    </header>
 
-<div class="card shadow-sm border-0">
-    <div class="card-body">
-        <form action="{% if group %}/groups/{{ group.id }}{% else %}/groups{% endif %}" method="post" class="d-grid gap-3">
-            <div>
-                <label class="form-label">Название</label>
-                <input class="form-control" type="text" name="title" value="{{ group.title if group else '' }}" required>
-            </div>
-            <div>
-                <label class="form-label">Описание</label>
-                <textarea class="form-control" rows="3" name="description">{{ group.description if group else '' }}</textarea>
-            </div>
-            <div>
-                <label class="form-label">Участники</label>
-                <select class="form-select" name="members" multiple size="12">
-                    {% for user in all_users %}
-                        <option value="{{ user.id }}" {% if group and user.id in group.members %}selected{% endif %}>
-                            {{ user.full_name or user.username }} · {{ user.email }}
-                        </option>
-                    {% endfor %}
-                </select>
-            </div>
-            <button class="btn btn-dark" type="submit">{% if group %}Сохранить группу{% else %}Создать группу{% endif %}</button>
+    <section class="group-edit-panel">
+        <form action="{% if group %}/groups/{{ group.id }}{% else %}/groups{% endif %}" method="post" class="group-edit-form">
+            <section class="group-edit-section">
+                <h2 class="group-edit-section-title">
+                    <i data-lucide="info"></i>
+                    Основная информация
+                </h2>
+
+                <label class="group-edit-field">
+                    <span>Название</span>
+                    <input type="text" name="title" value="{{ group.title if group else '' }}" required>
+                </label>
+
+                <label class="group-edit-field">
+                    <span>Описание</span>
+                    <textarea rows="5" name="description">{{ group.description if group else '' }}</textarea>
+                </label>
+            </section>
+
+            <section class="group-edit-section group-edit-members" data-member-picker>
+                <h2 class="group-edit-section-title">
+                    <i data-lucide="users"></i>
+                    Участники
+                </h2>
+
+                <div class="group-edit-field">
+                    <span>Добавить участников</span>
+                    <div class="member-picker">
+                        <div class="member-search">
+                            <i data-lucide="search"></i>
+                            <input type="search" placeholder="Поиск участников по имени или email..." data-member-search autocomplete="off">
+                            <button type="button" data-member-toggle aria-label="Показать участников">
+                                <i data-lucide="chevron-down"></i>
+                            </button>
+                        </div>
+
+                        <div class="member-dropdown" data-member-dropdown>
+                            {% for user in all_users %}
+                                {% set is_selected = group and user.id in group.members %}
+                                <label class="member-option" data-member-option data-name="{{ (user.full_name or user.username)|lower }}" data-email="{{ user.email|lower }}">
+                                    <input type="checkbox" name="members" value="{{ user.id }}" {% if is_selected %}checked{% endif %} data-member-checkbox data-user-name="{{ user.full_name or user.username }}" data-user-email="{{ user.email }}">
+                                    <span class="member-avatar">{{ (user.full_name or user.username or 'U')[:1] }}</span>
+                                    <span class="member-option-text">
+                                        <strong>{{ user.full_name or user.username }}</strong>
+                                        <small>{{ user.email }}</small>
+                                    </span>
+                                </label>
+                            {% else %}
+                                <div class="member-empty">Доступных участников нет.</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="selected-members">
+                    <div class="selected-members-label">
+                        Выбранные участники (<span data-member-count>0</span>)
+                    </div>
+                    <div class="selected-members-list" data-member-selected>
+                        <div class="member-empty">Участники пока не выбраны.</div>
+                    </div>
+                </div>
+            </section>
+
+            <button class="group-save-button" type="submit">
+                <i data-lucide="save"></i>
+                {% if group %}Сохранить группу{% else %}Создать группу{% endif %}
+            </button>
         </form>
-    </div>
+    </section>
 </div>
 {% endblock %}

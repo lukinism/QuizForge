@@ -1,37 +1,201 @@
 {% extends "base.html" %}
 {% block title %}Мои результаты{% endblock %}
 {% block public_content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <div>
-        <h1 class="h3 mb-1">Мои результаты</h1>
-        <p class="text-secondary mb-0">История прохождений и просмотр доступных результатов.</p>
-    </div>
-    <a class="btn btn-outline-dark" href="/student">Назад</a>
-</div>
+{% set results_stats = namespace(finished=0, terminated=0, percent_sum=0) %}
+{% set test_options = namespace(ids=[]) %}
+{% for attempt in attempts %}
+    {% if attempt.status.value == "finished" %}
+        {% set results_stats.finished = results_stats.finished + 1 %}
+        {% set results_stats.percent_sum = results_stats.percent_sum + attempt.percent %}
+    {% endif %}
+    {% if attempt.status.value == "terminated" %}
+        {% set results_stats.terminated = results_stats.terminated + 1 %}
+    {% endif %}
+    {% if attempt.test_id not in test_options.ids %}
+        {% set test_options.ids = test_options.ids + [attempt.test_id] %}
+    {% endif %}
+{% endfor %}
 
-<div class="card shadow-sm border-0">
-    <div class="card-body">
-        <div class="table-responsive">
-            <table class="table align-middle">
-                <thead><tr><th>Тест</th><th>Статус</th><th>Баллы</th><th>Действие</th></tr></thead>
+<section class="student-results-page" data-student-results>
+    <header class="student-results-header">
+        <div>
+            <h1>Мои результаты</h1>
+            <p>История прохождений и просмотр доступных результатов.</p>
+        </div>
+        <a class="student-profile-back" href="/student">
+            <i data-lucide="arrow-left"></i>
+            <span>Назад</span>
+        </a>
+    </header>
+
+    <section class="student-results-metrics" aria-label="Сводка результатов">
+        <article class="student-result-metric">
+            <span><i data-lucide="line-chart"></i></span>
+            <div>
+                <p>Всего попыток</p>
+                <strong>{{ attempts|length }}</strong>
+            </div>
+        </article>
+        <article class="student-result-metric">
+            <span><i data-lucide="badge-check"></i></span>
+            <div>
+                <p>Завершено</p>
+                <strong>{{ results_stats.finished }}</strong>
+            </div>
+        </article>
+        <article class="student-result-metric">
+            <span><i data-lucide="flag"></i></span>
+            <div>
+                <p>Досрочно завершено</p>
+                <strong>{{ results_stats.terminated }}</strong>
+            </div>
+        </article>
+        <article class="student-result-metric">
+            <span><i data-lucide="pie-chart"></i></span>
+            <div>
+                <p>Средний балл</p>
+                <strong>{% if results_stats.finished %}{{ (results_stats.percent_sum / results_stats.finished)|round(2) }}{% else %}0{% endif %}%</strong>
+            </div>
+        </article>
+    </section>
+
+    <section class="student-results-panel">
+        <div class="student-results-toolbar">
+            <label class="student-results-search">
+                <i data-lucide="search"></i>
+                <input type="search" placeholder="Поиск по названию теста..." data-results-search>
+            </label>
+            <div class="student-results-filters">
+                <label class="student-results-select">
+                    <span>Статус:</span>
+                    <select data-results-status>
+                        <option value="all">Все</option>
+                        <option value="finished">Завершена</option>
+                        <option value="terminated">Завершена досрочно</option>
+                        <option value="expired">Истекла</option>
+                        <option value="pending_review">На проверке</option>
+                        <option value="revision_requested">На доработке</option>
+                        <option value="started">Начата</option>
+                    </select>
+                    <i data-lucide="chevron-down"></i>
+                </label>
+                <label class="student-results-select">
+                    <span>Тест:</span>
+                    <select data-results-test>
+                        <option value="all">Все</option>
+                        {% for test_id in test_options.ids %}
+                            {% set test_item = test_map.get(test_id) %}
+                            <option value="{{ test_id }}">{{ test_item.title if test_item else test_id }}</option>
+                        {% endfor %}
+                    </select>
+                    <i data-lucide="chevron-down"></i>
+                </label>
+                <button class="student-results-reset" type="button" data-results-reset>
+                    <i data-lucide="refresh-cw"></i>
+                    <span>Сбросить</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="student-table-wrap">
+            <table class="student-table student-results-table">
+                <thead>
+                <tr>
+                    <th>Тест</th>
+                    <th>Статус</th>
+                    <th>Баллы</th>
+                    <th>Действие</th>
+                </tr>
+                </thead>
                 <tbody>
                 {% for attempt in attempts %}
-                    <tr>
+                    <tr data-result-row data-title="{{ attempt.test_title|lower }}" data-status="{{ attempt.status.value }}" data-test-id="{{ attempt.test_id }}">
                         <td>{{ attempt.test_title }}</td>
                         <td>
-                            <span class="badge {% if attempt.status.value == 'pending_review' %}text-bg-warning{% elif attempt.status.value == 'revision_requested' %}text-bg-info{% else %}text-bg-secondary{% endif %}">
+                            <span class="student-status-pill {% if attempt.status.value == 'finished' %}is-finished{% elif attempt.status.value in ['terminated', 'expired'] %}is-stopped{% else %}is-muted{% endif %}">
                                 {{ attempt.status|enum_label }}
                             </span>
                         </td>
                         <td>{{ attempt.score }} / {{ attempt.max_score }}</td>
-                        <td><a class="btn btn-sm btn-outline-dark" href="/attempts/{{ attempt.id }}">Открыть</a></td>
+                        <td>
+                            <a class="student-open-button" href="/attempts/{{ attempt.id }}">
+                                <span>Открыть</span>
+                                <i data-lucide="external-link"></i>
+                            </a>
+                        </td>
                     </tr>
                 {% else %}
-                    <tr><td colspan="4" class="text-secondary">Попыток пока нет.</td></tr>
+                    <tr>
+                        <td colspan="4">
+                            <div class="student-empty-state student-empty-compact">
+                                <span><i data-lucide="bar-chart-3"></i></span>
+                                <p>Попыток пока нет.</p>
+                            </div>
+                        </td>
+                    </tr>
                 {% endfor %}
                 </tbody>
             </table>
         </div>
-    </div>
-</div>
+
+        <div class="student-results-footer">
+            <span>Показано <span data-results-visible>{{ attempts|length }}</span> из {{ attempts|length }} результатов</span>
+            <div class="student-results-pagination">
+                <label>
+                    <span>Строк на странице:</span>
+                    <select>
+                        <option selected>20</option>
+                        <option>50</option>
+                    </select>
+                    <i data-lucide="chevron-down"></i>
+                </label>
+                <button type="button" disabled><i data-lucide="chevron-left"></i></button>
+                <button class="is-active" type="button">1</button>
+                <button type="button" disabled><i data-lucide="chevron-right"></i></button>
+            </div>
+        </div>
+    </section>
+</section>
+
+<script>
+    (() => {
+        const root = document.querySelector("[data-student-results]");
+        if (!root) return;
+
+        const search = root.querySelector("[data-results-search]");
+        const status = root.querySelector("[data-results-status]");
+        const test = root.querySelector("[data-results-test]");
+        const reset = root.querySelector("[data-results-reset]");
+        const visible = root.querySelector("[data-results-visible]");
+        const rows = Array.from(root.querySelectorAll("[data-result-row]"));
+
+        const applyFilters = () => {
+            const query = (search?.value || "").trim().toLowerCase();
+            const selectedStatus = status?.value || "all";
+            const selectedTest = test?.value || "all";
+            let visibleCount = 0;
+
+            rows.forEach((row) => {
+                const matchesText = row.dataset.title.includes(query);
+                const matchesStatus = selectedStatus === "all" || row.dataset.status === selectedStatus;
+                const matchesTest = selectedTest === "all" || row.dataset.testId === selectedTest;
+                const isVisible = matchesText && matchesStatus && matchesTest;
+                row.hidden = !isVisible;
+                if (isVisible) visibleCount += 1;
+            });
+
+            if (visible) visible.textContent = visibleCount;
+        };
+
+        search?.addEventListener("input", applyFilters);
+        status?.addEventListener("change", applyFilters);
+        test?.addEventListener("change", applyFilters);
+        reset?.addEventListener("click", () => {
+            if (search) search.value = "";
+            if (status) status.value = "all";
+            if (test) test.value = "all";
+            applyFilters();
+        });
+    })();
+</script>
 {% endblock %}

@@ -1,95 +1,176 @@
 {% extends "base.html" %}
 {% block title %}Профиль{% endblock %}
 {% block public_content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <div>
-        <h1 class="h3 mb-1">Профиль</h1>
-        <p class="text-secondary mb-0">Личные данные, группы и сводка по прохождениям.</p>
-    </div>
-    <a class="btn btn-outline-dark" href="/student">Назад</a>
-</div>
+<section class="student-profile-page">
+    <header class="student-profile-header">
+        <div>
+            <h1>Профиль</h1>
+            <p>Личные данные, группы и сводка по прохождениям.</p>
+        </div>
+        <a class="student-profile-back" href="/student">
+            <i data-lucide="arrow-left"></i>
+            <span>Назад</span>
+        </a>
+    </header>
 
-<div class="row g-4 mb-4">
-    <div class="col-lg-4">
-        <div class="card shadow-sm border-0 h-100">
-            <div class="card-body">
-                <h2 class="h5 mb-3">Данные аккаунта</h2>
-                <dl class="row mb-0">
-                    <dt class="col-sm-5">Имя</dt>
-                    <dd class="col-sm-7">{{ current_user.full_name or "Не указано" }}</dd>
-                    <dt class="col-sm-5">Логин</dt>
-                    <dd class="col-sm-7">{{ current_user.username }}</dd>
-                    <dt class="col-sm-5">Email</dt>
-                    <dd class="col-sm-7 text-break">{{ current_user.email }}</dd>
-                    <dt class="col-sm-5">Роль</dt>
-                    <dd class="col-sm-7">{{ current_user.role|enum_label }}</dd>
-                    <dt class="col-sm-5">Регистрация</dt>
-                    <dd class="col-sm-7">{{ current_user.created_at|datetime_label }}</dd>
+    <section class="student-profile-layout">
+        <div class="student-profile-left">
+            <article class="student-account-card">
+                <div class="student-profile-card-title">
+                    <span><i data-lucide="user"></i></span>
+                    <h2>Данные аккаунта</h2>
+                </div>
+                <dl>
+                    <div>
+                        <dt>Имя</dt>
+                        <dd>{{ current_user.full_name or "Не указано" }}</dd>
+                    </div>
+                    <div>
+                        <dt>Логин</dt>
+                        <dd>{{ current_user.username }}</dd>
+                    </div>
+                    <div>
+                        <dt>Email</dt>
+                        <dd>{{ current_user.email }}</dd>
+                    </div>
+                    <div>
+                        <dt>Роль</dt>
+                        <dd>{{ current_user.role|enum_label }}</dd>
+                    </div>
+                    <div>
+                        <dt>Регистрация</dt>
+                        <dd>{{ current_user.created_at|datetime_label }}</dd>
+                    </div>
                 </dl>
-            </div>
-        </div>
-    </div>
-    <div class="col-lg-8">
-        <div class="row g-3">
-            <div class="col-md-4"><div class="card stat-card"><div class="card-body"><div class="stat-label">Попытки</div><div class="stat-value">{{ stats.attempts_count }}</div></div></div></div>
-            <div class="col-md-4"><div class="card stat-card"><div class="card-body"><div class="stat-label">Завершено</div><div class="stat-value">{{ stats.finished_count }}</div></div></div></div>
-            <div class="col-md-4"><div class="card stat-card"><div class="card-body"><div class="stat-label">Сдано</div><div class="stat-value">{{ stats.passed_count }}</div></div></div></div>
-            <div class="col-md-6"><div class="card stat-card"><div class="card-body"><div class="stat-label">Средний результат</div><div class="stat-value">{{ stats.average_percent }}%</div></div></div></div>
-            <div class="col-md-6"><div class="card stat-card"><div class="card-body"><div class="stat-label">Группы</div><div class="stat-value">{{ stats.groups_count }}</div></div></div></div>
-        </div>
-    </div>
-</div>
+            </article>
 
-<div class="row g-4">
-    <div class="col-lg-5">
-        <div class="card shadow-sm border-0">
-            <div class="card-body">
-                <h2 class="h5 mb-3">Мои группы</h2>
-                <div class="table-responsive">
-                    <table class="table align-middle">
-                        <thead><tr><th>Группа</th><th>Дата создания</th></tr></thead>
+            <section class="student-panel student-groups-panel">
+                <div class="student-panel-head">
+                    <div class="student-profile-card-title">
+                        <span><i data-lucide="users"></i></span>
+                        <h2>Мои группы</h2>
+                    </div>
+                </div>
+                <div class="student-table-wrap">
+                    <table class="student-table">
+                        <thead>
+                        <tr>
+                            <th>Группа</th>
+                            <th>Дата создания</th>
+                        </tr>
+                        </thead>
                         <tbody>
                         {% for group in groups %}
                             <tr>
                                 <td>
-                                    <div class="fw-semibold">{{ group.title }}</div>
-                                    <div class="small text-secondary">{{ group.description or "Без описания" }}</div>
+                                    <strong class="student-group-title">{{ group.title }}</strong>
+                                    <span class="student-group-description">{{ group.description or "Без описания" }}</span>
                                 </td>
                                 <td>{{ group.created_at|datetime_label }}</td>
                             </tr>
                         {% else %}
-                            <tr><td colspan="2" class="text-secondary">Вы пока не состоите в группах.</td></tr>
+                            <tr>
+                                <td colspan="2">
+                                    <div class="student-empty-state student-empty-compact">
+                                        <span><i data-lucide="users"></i></span>
+                                        <p>Вы пока не состоите в группах.</p>
+                                    </div>
+                                </td>
+                            </tr>
                         {% endfor %}
                         </tbody>
                     </table>
                 </div>
-            </div>
+            </section>
         </div>
-    </div>
-    <div class="col-lg-7">
-        <div class="card shadow-sm border-0">
-            <div class="card-body">
-                <h2 class="h5 mb-3">Последние прохождения</h2>
-                <div class="table-responsive">
-                    <table class="table align-middle">
-                        <thead><tr><th>Тест</th><th>Дата</th><th>Статус</th><th>Баллы</th><th></th></tr></thead>
+
+        <div class="student-profile-right">
+            <section class="student-profile-stats" aria-label="Сводка профиля">
+                <article class="student-profile-stat">
+                    <span class="student-profile-stat-icon"><i data-lucide="trending-up"></i></span>
+                    <div>
+                        <span>Попытки</span>
+                        <strong>{{ stats.attempts_count }}</strong>
+                    </div>
+                </article>
+                <article class="student-profile-stat">
+                    <span class="student-profile-stat-icon"><i data-lucide="badge-check"></i></span>
+                    <div>
+                        <span>Завершено</span>
+                        <strong>{{ stats.finished_count }}</strong>
+                    </div>
+                </article>
+                <article class="student-profile-stat">
+                    <span class="student-profile-stat-icon is-green"><i data-lucide="circle-check"></i></span>
+                    <div>
+                        <span>Сдано</span>
+                        <strong>{{ stats.passed_count }}</strong>
+                    </div>
+                </article>
+                <article class="student-profile-stat student-profile-stat-wide">
+                    <span class="student-profile-stat-icon"><i data-lucide="pie-chart"></i></span>
+                    <div>
+                        <span>Средний результат</span>
+                        <strong>{{ stats.average_percent }}%</strong>
+                    </div>
+                </article>
+                <article class="student-profile-stat">
+                    <span class="student-profile-stat-icon"><i data-lucide="users"></i></span>
+                    <div>
+                        <span>Группы</span>
+                        <strong>{{ stats.groups_count }}</strong>
+                    </div>
+                </article>
+            </section>
+
+            <section class="student-panel student-attempts-panel">
+                <div class="student-panel-head">
+                    <div class="student-profile-card-title">
+                        <span><i data-lucide="clock-3"></i></span>
+                        <h2>Последние прохождения</h2>
+                    </div>
+                </div>
+                <div class="student-table-wrap">
+                    <table class="student-table">
+                        <thead>
+                        <tr>
+                            <th>Тест</th>
+                            <th>Дата</th>
+                            <th>Статус</th>
+                            <th>Баллы</th>
+                            <th></th>
+                        </tr>
+                        </thead>
                         <tbody>
                         {% for attempt in recent_attempts %}
                             <tr>
                                 <td>{{ attempt.test_title }}</td>
                                 <td>{{ attempt.started_at|datetime_label }}</td>
-                                <td><span class="badge text-bg-secondary">{{ attempt.status|enum_label }}</span></td>
+                                <td>
+                                    <span class="student-status-pill {% if attempt.status.value == 'finished' %}is-finished{% elif attempt.status.value in ['terminated', 'expired'] %}is-stopped{% else %}is-muted{% endif %}">
+                                        {{ attempt.status|enum_label }}
+                                    </span>
+                                </td>
                                 <td>{{ attempt.score }} / {{ attempt.max_score }}</td>
-                                <td><a class="btn btn-sm btn-outline-dark" href="/attempts/{{ attempt.id }}">Открыть</a></td>
+                                <td>
+                                    <a class="student-profile-open" href="/attempts/{{ attempt.id }}">Открыть</a>
+                                </td>
                             </tr>
                         {% else %}
-                            <tr><td colspan="5" class="text-secondary">Попыток пока нет.</td></tr>
+                            <tr>
+                                <td colspan="5">
+                                    <div class="student-empty-state student-empty-compact">
+                                        <span><i data-lucide="bar-chart-3"></i></span>
+                                        <p>Попыток пока нет.</p>
+                                    </div>
+                                </td>
+                            </tr>
                         {% endfor %}
                         </tbody>
                     </table>
                 </div>
-            </div>
+            </section>
         </div>
-    </div>
-</div>
+    </section>
+</section>
 {% endblock %}

@@ -2,6 +2,7 @@ import json
 import zipfile
 from datetime import timedelta
 from pathlib import Path
+from urllib.parse import urlencode
 from uuid import uuid4
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, UploadFile, status
@@ -159,6 +160,12 @@ def _format_validation_error(exc: ValidationError) -> str:
     location = ".".join(str(part) for part in first_error.get("loc", []))
     message = first_error.get("msg", "Проверьте структуру JSON.")
     return f"{location}: {message}" if location else message
+
+
+def _edit_redirect_url(test_id: str, message: str, anchor: str = "") -> str:
+    query = urlencode({"toast": message, "toast_level": "success"})
+    fragment = f"#{anchor}" if anchor else ""
+    return f"/tests/{test_id}/edit?{query}{fragment}"
 
 
 def _read_file_start(path: Path, size: int = 8192) -> bytes:
@@ -478,7 +485,7 @@ async def create_test_submit(
             status_code=getattr(exc, "status_code", 400),
         )
 
-    return RedirectResponse(url=f"/tests/{test.id}/edit", status_code=303)
+    return RedirectResponse(url=_edit_redirect_url(test.id, "Тест создан.", "test-settings"), status_code=303)
 
 
 @router.post("/import")
@@ -579,7 +586,7 @@ async def update_test_submit(
             status_code=getattr(exc, "status_code", 400),
         )
 
-    return RedirectResponse(url=f"/tests/{test_id}/edit", status_code=303)
+    return RedirectResponse(url=_edit_redirect_url(test_id, "Тест сохранен.", "test-settings"), status_code=303)
 
 
 @router.post("/{test_id}/questions")
@@ -601,7 +608,7 @@ async def add_question_submit(
             status_code=getattr(exc, "status_code", 400),
         )
 
-    return RedirectResponse(url=f"/tests/{test_id}/edit", status_code=303)
+    return RedirectResponse(url=_edit_redirect_url(test_id, "Вопрос добавлен.", "add-question"), status_code=303)
 
 
 @router.post("/{test_id}/questions/{question_id}")
@@ -623,7 +630,7 @@ async def update_question_submit(
             error=getattr(exc, "detail", str(exc)),
             status_code=getattr(exc, "status_code", 400),
         )
-    return RedirectResponse(url=f"/tests/{test_id}/edit", status_code=303)
+    return RedirectResponse(url=_edit_redirect_url(test_id, "Вопрос сохранен.", f"question-{question_id}"), status_code=303)
 
 
 @router.post("/{test_id}/questions/{question_id}/delete")

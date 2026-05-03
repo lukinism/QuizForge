@@ -1,35 +1,108 @@
 {% extends "base.html" %}
 {% block title %}Каталог тестов{% endblock %}
 {% block public_content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <div>
-        <h1 class="h3 mb-1">Публичные тесты</h1>
-        <p class="text-secondary mb-0">Приватные тесты открываются по персональной ссылке вида `/tests/link/&lt;token&gt;`.</p>
-    </div>
-    <a class="btn btn-outline-dark" href="/student">Назад</a>
-</div>
+<section class="student-catalog-page" data-student-catalog>
+    <header class="student-catalog-header">
+        <div>
+            <h1>Публичные тесты</h1>
+            <p>Приватные тесты открываются по персональной ссылке.</p>
+        </div>
+        <a class="student-profile-back" href="/student">
+            <i data-lucide="arrow-left"></i>
+            <span>Назад</span>
+        </a>
+    </header>
 
-<div class="row g-4">
-    {% for test in tests %}
-        <div class="col-md-6 col-xl-4">
-            <div class="card h-100 shadow-sm border-0">
-                <div class="card-body d-flex flex-column">
-                    <div class="d-flex justify-content-between align-items-start mb-3">
-                        <h2 class="h5 mb-0">{{ test.title }}</h2>
-                        <span class="badge text-bg-dark">{{ test.status|enum_label }}</span>
-                    </div>
-                    <p class="text-secondary flex-grow-1">{{ test.description or "Описание отсутствует." }}</p>
-                    <div class="small text-secondary mb-3">
-                        {{ test.questions|length }} вопросов · до {{ test.settings.max_attempts }} попыток
-                    </div>
-                    <a class="btn btn-dark" href="/tests/{{ test.id }}/take">Начать тест</a>
-                </div>
+    <section class="student-private-banner">
+        <div class="student-private-copy">
+            <span><i data-lucide="info"></i></span>
+            <div>
+                <h2>Приватные тесты доступны по персональной ссылке</h2>
+                <p>Если у вас есть ссылка на приватный тест, перейдите по ней, чтобы открыть доступ.</p>
             </div>
         </div>
-    {% else %}
-        <div class="col-12">
-            <div class="alert alert-light border">Пока нет опубликованных публичных тестов.</div>
+        <div class="student-private-illustration" aria-hidden="true">
+            <span></span>
+            <span></span>
+            <span></span>
+            <i data-lucide="link"></i>
         </div>
-    {% endfor %}
-</div>
+    </section>
+
+    <div class="student-catalog-toolbar">
+        <label class="student-catalog-search">
+            <i data-lucide="search"></i>
+            <input type="search" placeholder="Поиск по названию теста..." data-catalog-search>
+        </label>
+        <label class="student-catalog-filter">
+            <span>Статус:</span>
+            <select data-catalog-status>
+                <option value="all">Все</option>
+                <option value="published">Опубликован</option>
+            </select>
+            <i data-lucide="chevron-down"></i>
+        </label>
+    </div>
+
+    <section class="student-test-grid">
+        {% for test in tests %}
+            <article class="student-test-card" data-test-card data-test-title="{{ test.title|lower }} {{ test.description|lower if test.description else '' }}" data-test-status="{{ test.status.value }}">
+                <span class="student-test-status">{{ test.status|enum_label }}</span>
+                <div class="student-test-body">
+                    <h2>{{ test.title }}</h2>
+                    <p>{{ test.description or "Описание отсутствует." }}</p>
+                </div>
+                <div class="student-test-meta">
+                    <span><i data-lucide="list"></i>{{ test.questions|length }} вопросов</span>
+                    <span><i data-lucide="refresh-cw"></i>до {{ test.settings.max_attempts }} {{ "попытки" if test.settings.max_attempts == 1 else "попыток" }}</span>
+                    {% if test.settings.time_limit_minutes %}
+                        <span><i data-lucide="clock"></i>{{ test.settings.time_limit_minutes }} мин</span>
+                    {% endif %}
+                </div>
+                <a class="student-test-start" href="/tests/{{ test.id }}/take">Начать тест</a>
+            </article>
+        {% else %}
+            <div class="student-catalog-empty">
+                <span><i data-lucide="clipboard-list"></i></span>
+                <p>Пока нет опубликованных публичных тестов.</p>
+            </div>
+        {% endfor %}
+    </section>
+
+    <div class="student-catalog-empty is-filtered" data-catalog-empty hidden>
+        <span><i data-lucide="search-x"></i></span>
+        <p>По этому запросу тестов не найдено.</p>
+    </div>
+</section>
+
+<script>
+    (() => {
+        const root = document.querySelector("[data-student-catalog]");
+        if (!root) return;
+
+        const search = root.querySelector("[data-catalog-search]");
+        const status = root.querySelector("[data-catalog-status]");
+        const cards = Array.from(root.querySelectorAll("[data-test-card]"));
+        const empty = root.querySelector("[data-catalog-empty]");
+
+        const applyFilters = () => {
+            const query = (search?.value || "").trim().toLowerCase();
+            const selectedStatus = status?.value || "all";
+            let visibleCount = 0;
+
+            cards.forEach((card) => {
+                const matchesText = card.dataset.testTitle.includes(query);
+                const matchesStatus = selectedStatus === "all" || card.dataset.testStatus === selectedStatus;
+                const isVisible = matchesText && matchesStatus;
+                card.hidden = !isVisible;
+                if (isVisible) visibleCount += 1;
+            });
+
+            if (empty) empty.hidden = visibleCount !== 0;
+        };
+
+        search?.addEventListener("input", applyFilters);
+        status?.addEventListener("change", applyFilters);
+    })();
+</script>
 {% endblock %}

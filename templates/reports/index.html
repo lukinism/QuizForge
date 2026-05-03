@@ -1,50 +1,138 @@
 {% extends "base.html" %}
 {% block title %}Отчеты{% endblock %}
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <div>
-        <h1 class="h3 mb-1">Отчеты</h1>
-        <div class="text-muted">Сформированные PDF-отчеты</div>
-    </div>
-    <a class="btn btn-primary" href="/reports/create">Создать отчет</a>
-</div>
+{% set report_stats = namespace(user=0, test=0, group=0) %}
+{% for report in reports %}
+    {% if report.type.value in ["user", "user_result"] %}
+        {% set report_stats.user = report_stats.user + 1 %}
+    {% elif report.type.value in ["test", "test_result"] %}
+        {% set report_stats.test = report_stats.test + 1 %}
+    {% elif report.type.value in ["group", "group_result"] %}
+        {% set report_stats.group = report_stats.group + 1 %}
+    {% endif %}
+{% endfor %}
 
-<div class="card shadow-sm">
-    <div class="table-responsive">
-        <table class="table table-hover align-middle mb-0">
-            <thead>
-            <tr>
-                <th>Номер</th>
-                <th>Тип</th>
-                <th>Название</th>
-                <th>Кто сформировал</th>
-                <th>Дата создания</th>
-                <th class="text-end">Действия</th>
-            </tr>
-            </thead>
-            <tbody>
-            {% for report in reports %}
+<div class="reports-page" data-reports-page>
+    <header class="reports-header">
+        <div>
+            <h1>Отчёты</h1>
+            <p>Сформированные PDF-отчеты</p>
+        </div>
+        <a class="reports-create-button" href="/reports/create">
+            <i data-lucide="plus"></i>
+            Создать отчет
+        </a>
+    </header>
+
+    <section class="reports-metrics" aria-label="Сводка отчетов">
+        <article class="reports-metric-card">
+            <span class="reports-metric-icon reports-metric-blue"><i data-lucide="file-text"></i></span>
+            <div>
+                <span>Всего отчетов</span>
+                <strong>{{ reports|length }}</strong>
+            </div>
+        </article>
+        <article class="reports-metric-card">
+            <span class="reports-metric-icon reports-metric-green"><i data-lucide="user"></i></span>
+            <div>
+                <span>По пользователям</span>
+                <strong>{{ report_stats.user }}</strong>
+            </div>
+        </article>
+        <article class="reports-metric-card">
+            <span class="reports-metric-icon reports-metric-purple"><i data-lucide="list-checks"></i></span>
+            <div>
+                <span>По тестам</span>
+                <strong>{{ report_stats.test }}</strong>
+            </div>
+        </article>
+        <article class="reports-metric-card">
+            <span class="reports-metric-icon reports-metric-orange"><i data-lucide="users"></i></span>
+            <div>
+                <span>По группам</span>
+                <strong>{{ report_stats.group }}</strong>
+            </div>
+        </article>
+    </section>
+
+    <section class="reports-table-panel">
+        <div class="reports-toolbar">
+            <label class="reports-search">
+                <i data-lucide="search"></i>
+                <input type="search" placeholder="Поиск по номеру, названию или автору..." data-reports-search>
+            </label>
+            <div class="reports-filters">
+                <label class="reports-select">
+                    <select data-reports-type>
+                        <option value="all">Тип: Все</option>
+                        <option value="user">По пользователям</option>
+                        <option value="test">По тестам</option>
+                        <option value="group">По группам</option>
+                        <option value="other">Другие</option>
+                    </select>
+                    <i data-lucide="chevron-down"></i>
+                </label>
+                <label class="reports-select reports-sort-select">
+                    <i data-lucide="arrow-down-to-line"></i>
+                    <select data-reports-sort>
+                        <option value="new">Сначала новые</option>
+                        <option value="old">Сначала старые</option>
+                    </select>
+                    <i data-lucide="chevron-down"></i>
+                </label>
+            </div>
+        </div>
+
+        <div class="reports-table-wrap">
+            <table class="reports-table">
+                <thead>
                 <tr>
-                    <td class="fw-semibold">{{ report.report_number }}</td>
-                    <td>{{ report.type.value }}</td>
-                    <td>{{ report.title }}</td>
-                    <td>
-                        {% set author = user_map.get(report.generated_by) %}
-                        {{ author.full_name or author.username if author else "Неизвестно" }}
-                    </td>
-                    <td>{{ report.created_at|datetime_label }}</td>
-                    <td class="text-end">
-                        <a class="btn btn-outline-secondary btn-sm" href="/reports/{{ report.id }}">Подробнее</a>
-                        <a class="btn btn-outline-primary btn-sm" href="/reports/{{ report.id }}/download">Скачать PDF</a>
-                    </td>
+                    <th>Номер</th>
+                    <th>Тип</th>
+                    <th>Название</th>
+                    <th>Кто сформировал</th>
+                    <th>Дата создания</th>
+                    <th>Действия</th>
                 </tr>
-            {% else %}
-                <tr>
-                    <td colspan="6" class="text-center text-muted py-4">Отчетов пока нет.</td>
-                </tr>
-            {% endfor %}
-            </tbody>
-        </table>
-    </div>
+                </thead>
+                <tbody data-reports-body>
+                {% for report in reports %}
+                    {% set author = user_map.get(report.generated_by) %}
+                    {% set author_name = author.full_name or author.username if author else "Неизвестно" %}
+                    {% set normalized_type = "user" if report.type.value in ["user", "user_result"] else "test" if report.type.value in ["test", "test_result"] else "group" if report.type.value in ["group", "group_result"] else "other" %}
+                    <tr data-report-row data-index="{{ loop.index0 }}" data-type="{{ normalized_type }}" data-search="{{ report.report_number|lower }} {{ report.title|lower }} {{ author_name|lower }}">
+                        <td><strong>{{ report.report_number }}</strong></td>
+                        <td><span class="reports-type-pill reports-type-{{ normalized_type }}">{{ report.type.value }}</span></td>
+                        <td>{{ report.title }}</td>
+                        <td>{{ author_name }}</td>
+                        <td>{{ report.created_at|datetime_label }}</td>
+                        <td>
+                            <div class="reports-row-actions">
+                                <a class="reports-row-button" href="/reports/{{ report.id }}">Подробнее</a>
+                                <a class="reports-download-button" href="/reports/{{ report.id }}/download">
+                                    <i data-lucide="file-text"></i>
+                                    Скачать PDF
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="6" class="reports-empty">Отчетов пока нет.</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="reports-footer">
+            <span>Показано <span data-reports-visible>{{ reports|length }}</span> из {{ reports|length }} отчетов</span>
+            <div class="reports-pagination">
+                <button type="button" disabled><i data-lucide="chevron-left"></i></button>
+                <button class="is-current" type="button">1</button>
+                <button type="button" disabled><i data-lucide="chevron-right"></i></button>
+            </div>
+        </div>
+    </section>
 </div>
 {% endblock %}

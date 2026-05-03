@@ -1,78 +1,125 @@
 {% extends "base.html" %}
 {% block title %}Панель проверяющего{% endblock %}
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <div>
-        <h1 class="h3 mb-1">Панель проверяющего</h1>
-        <p class="text-secondary mb-0">Ваши тесты, группы и результаты прохождений.</p>
-    </div>
-    <a class="btn btn-dark" href="/tests/create">Создать тест</a>
-</div>
-
-<div class="row g-3 mb-4">
-    <div class="col-md-3"><div class="card stat-card"><div class="card-body"><div class="stat-label">Тесты</div><div class="stat-value">{{ stats.tests_count }}</div></div></div></div>
-    <div class="col-md-3"><div class="card stat-card"><div class="card-body"><div class="stat-label">Публик.</div><div class="stat-value">{{ stats.published_tests_count }}</div></div></div></div>
-    <div class="col-md-3"><div class="card stat-card"><div class="card-body"><div class="stat-label">Попытки</div><div class="stat-value">{{ stats.attempts_count }}</div></div></div></div>
-    <div class="col-md-3"><div class="card stat-card"><div class="card-body"><div class="stat-label">Группы</div><div class="stat-value">{{ stats.groups_count }}</div></div></div></div>
-</div>
-
-{% if stats.pending_review_count %}
-    <div class="alert alert-warning border-0 shadow-sm d-flex justify-content-between align-items-center">
-        <div>Требует проверки: {{ stats.pending_review_count }} попытк(и).</div>
-        <a class="btn btn-sm btn-warning" href="/attempts">Открыть проверку</a>
-    </div>
-{% endif %}
-
-<div class="row g-4">
-    <div class="col-lg-6">
-        <div class="card shadow-sm border-0">
-            <div class="card-body">
-                <h2 class="h5">Недавние тесты</h2>
-                <div class="table-responsive">
-                    <table class="table align-middle">
-                        <thead><tr><th>Тест</th><th>Статус</th><th>Вопросы</th></tr></thead>
-                        <tbody>
-                        {% for test in recent_tests %}
-                            <tr>
-                                <td>{{ test.title }}</td>
-                                <td><span class="badge text-bg-dark">{{ test.status|enum_label }}</span></td>
-                                <td>{{ test.questions|length }}</td>
-                            </tr>
-                        {% else %}
-                            <tr><td colspan="3" class="text-secondary">Тестов пока нет.</td></tr>
-                        {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+<section class="dashboard-page">
+    <header class="dashboard-header">
+        <div>
+            <h1>Панель проверяющего</h1>
+            <p>Ваши тесты, группы и результаты прохождений.</p>
         </div>
-    </div>
-    <div class="col-lg-6">
-        <div class="card shadow-sm border-0">
-            <div class="card-body">
-                <h2 class="h5">Последние попытки</h2>
-                <div class="table-responsive">
-                    <table class="table align-middle">
-                        <thead><tr><th>Тест</th><th>Баллы</th><th>Статус</th></tr></thead>
-                        <tbody>
-                        {% for attempt in recent_attempts %}
-                            <tr>
-                                <td>{{ attempt.test_title }}</td>
-                                <td>{{ attempt.score }} / {{ attempt.max_score }}</td>
-                                <td>
-                                    <span class="badge {% if attempt.status.value == 'pending_review' %}text-bg-warning{% elif attempt.status.value == 'revision_requested' %}text-bg-info{% else %}text-bg-secondary{% endif %}">
-                                        {{ attempt.status|enum_label }}
-                                    </span>
-                                </td>
-                            </tr>
-                        {% else %}
-                            <tr><td colspan="3" class="text-secondary">Попыток пока нет.</td></tr>
-                        {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
+        <a class="dashboard-create-button" href="/tests/create">
+            <i data-lucide="plus"></i>
+            <span>Создать тест</span>
+        </a>
+    </header>
+
+    <div class="dashboard-metrics">
+        <article class="dashboard-metric-card">
+            <div class="dashboard-metric-icon"><i data-lucide="file-text"></i></div>
+            <div>
+                <span>Тесты</span>
+                <strong>{{ stats.tests_count }}</strong>
             </div>
-        </div>
+        </article>
+        <article class="dashboard-metric-card">
+            <div class="dashboard-metric-icon"><i data-lucide="globe-2"></i></div>
+            <div>
+                <span>Публик.</span>
+                <strong>{{ stats.published_tests_count }}</strong>
+            </div>
+        </article>
+        <article class="dashboard-metric-card">
+            <div class="dashboard-metric-icon"><i data-lucide="clock-3"></i></div>
+            <div>
+                <span>Попытки</span>
+                <strong>{{ stats.attempts_count }}</strong>
+            </div>
+        </article>
+        <article class="dashboard-metric-card">
+            <div class="dashboard-metric-icon"><i data-lucide="users"></i></div>
+            <div>
+                <span>Группы</span>
+                <strong>{{ stats.groups_count }}</strong>
+            </div>
+        </article>
     </div>
-</div>
+
+    {% if stats.pending_review_count %}
+        <div class="dashboard-review-alert">
+            <div>
+                <strong>{{ stats.pending_review_count }}</strong>
+                <span>попытк(и) требуют проверки</span>
+            </div>
+            <a href="/attempts">Открыть проверку</a>
+        </div>
+    {% endif %}
+
+    <div class="dashboard-tables">
+        <section class="dashboard-table-panel">
+            <div class="dashboard-panel-title">
+                <span class="dashboard-panel-icon"><i data-lucide="clipboard-list"></i></span>
+                <h2>Недавние тесты</h2>
+            </div>
+            <div class="dashboard-table-wrap">
+                <table class="dashboard-table">
+                    <thead>
+                        <tr>
+                            <th>Тест</th>
+                            <th>Статус</th>
+                            <th>Вопросы</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for test in recent_tests %}
+                        <tr>
+                            <td>{{ test.title }}</td>
+                            <td>
+                                <span class="dashboard-badge {% if test.status.value == 'published' %}dashboard-badge-dark{% else %}dashboard-badge-muted{% endif %}">
+                                    {{ test.status|enum_label }}
+                                </span>
+                            </td>
+                            <td>{{ test.questions|length }}</td>
+                        </tr>
+                    {% else %}
+                        <tr><td colspan="3" class="dashboard-empty-cell">Тестов пока нет.</td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="dashboard-table-panel">
+            <div class="dashboard-panel-title">
+                <span class="dashboard-panel-icon"><i data-lucide="clock-3"></i></span>
+                <h2>Последние попытки</h2>
+            </div>
+            <div class="dashboard-table-wrap">
+                <table class="dashboard-table">
+                    <thead>
+                        <tr>
+                            <th>Тест</th>
+                            <th>Баллы</th>
+                            <th>Статус</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for attempt in recent_attempts %}
+                        <tr>
+                            <td>{{ attempt.test_title }}</td>
+                            <td>{{ attempt.score }} / {{ attempt.max_score }}</td>
+                            <td>
+                                <span class="dashboard-badge {% if attempt.status.value == 'finished' %}dashboard-badge-success{% else %}dashboard-badge-muted{% endif %}">
+                                    {{ attempt.status|enum_label }}
+                                </span>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr><td colspan="3" class="dashboard-empty-cell">Попыток пока нет.</td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+</section>
 {% endblock %}
